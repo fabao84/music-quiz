@@ -1187,6 +1187,12 @@
                     <button class="scale-mode-btn sl-type-btn" data-sltype="minor_blues">
                         <div class="btn-title">Minor Blues</div>
                     </button>
+                    <button class="scale-mode-btn sl-type-btn" data-sltype="harmonic_major">
+                        <div class="btn-title">Harmonic Major</div>
+                    </button>
+                    <button class="scale-mode-btn sl-type-btn" data-sltype="double_harmonic_major">
+                        <div class="btn-title">Double Harmonic Major</div>
+                    </button>
                 </div>
 
                 <button class="btn-secondary" id="scaleLearnBackBtn" style="width: 100%; margin-top: 20px;">Back</button>
@@ -1406,7 +1412,9 @@
             'major_pentatonic': { letters: [0,1,2,4,5],     intervals: [0,2,4,7,9] },
             'minor_pentatonic': { letters: [0,2,3,4,6],     intervals: [0,3,5,7,10] },
             'major_blues':      { letters: [0,1,2,2,4,5],   intervals: [0,2,3,4,7,9] },
-            'minor_blues':      { letters: [0,2,3,4,4,6],   intervals: [0,3,5,6,7,10] }
+            'minor_blues':      { letters: [0,2,3,4,4,6],   intervals: [0,3,5,6,7,10] },
+            'harmonic_major':        { letters: [0,1,2,3,4,5,6], intervals: [0,2,4,5,7,8,11] },
+            'double_harmonic_major': { letters: [0,1,2,3,4,5,6], intervals: [0,1,4,5,7,8,11] }
         };
 
         // Tonicas convencionales por sabor de escala (evita D# mayor, dobles alteraciones, etc.)
@@ -1515,6 +1523,113 @@
             cadences: 'major', short_major: 'major', short_minor: 'minor',
             pop: 'major', turnarounds: 'major', long_major: 'major'
         };
+
+        // ==================== LEVEL 9: EXTENSIONES ====================
+        // ids "normalizados" para usarse como sufijos de clave (ext_...)
+        // porque # y b no son válidos en identificadores JS
+        const CHORD_EXTENSIONS = [
+            { id: '9',       label: '9',   intervals: [0, 4, 7, 11, 14],       starter: true  }, // Cmaj9
+            { id: '11',      label: '11',  intervals: [0, 7, 10, 14, 17],      starter: true  }, // C7sus4/11 (sin 3ª)
+            { id: '13',      label: '13',  intervals: [0, 4, 7, 10, 14, 21],   starter: true  }, // C13 (sin 11)
+            { id: 'b9',      label: 'b9',  intervals: [0, 4, 7, 10, 13],       starter: false }, // C7b9
+            { id: 'sharp9',  label: '#9',  intervals: [0, 4, 7, 10, 15],       starter: false }, // C7#9 (Hendrix)
+            { id: 'sharp11', label: '#11', intervals: [0, 4, 7, 11, 14, 18],   starter: false }, // Cmaj7#11 (Lydian)
+            { id: 'b13',     label: 'b13', intervals: [0, 4, 7, 10, 14, 20],   starter: false }  // C7b13
+        ];
+        const EXTENSIONS_STARTER = CHORD_EXTENSIONS.filter(c => c.starter);
+        const EXTENSIONS_ALL = CHORD_EXTENSIONS;
+
+        // ==================== LEVEL 10: MODOS DE MENOR MELÓDICA ====================
+        // Los 7 modos con sus nombres más conocidos
+        const MELODIC_MINOR_MODES = [
+            { id: 'melodic_minor',    name: 'Melodic Minor',      intervals: [0,2,3,5,7,9,11] },
+            { id: 'dorian_b2',        name: 'Dorian b2',          intervals: [0,1,3,5,7,9,10] },
+            { id: 'lydian_augmented', name: 'Lydian Augmented',   intervals: [0,2,4,6,8,9,11] },
+            { id: 'lydian_dominant',  name: 'Lydian Dominant',    intervals: [0,2,4,6,7,9,10] },
+            { id: 'mixolydian_b6',    name: 'Mixolydian b6',      intervals: [0,2,4,5,7,8,10] },
+            { id: 'half_diminished',  name: 'Half-Diminished',    intervals: [0,2,3,5,6,8,10] },
+            { id: 'altered',          name: 'Altered',            intervals: [0,1,3,4,6,8,10] }
+        ];
+
+        // ==================== LEVEL 11: RECONOCIMIENTO ii-V-I ====================
+        // Todas las tonalidades posibles con deletreo convencional
+        const KEYS_MAJOR = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'];
+        const KEYS_MINOR = ['A', 'E', 'B', 'F#', 'C#', 'G#', 'Eb', 'Bb', 'F', 'C', 'G', 'D'];
+
+        // ==================== LEVEL 12: INTERCAMBIO MODAL ====================
+        // Moldes de 4 acordes donde EXACTAMENTE 1 es "prestado" (modal interchange).
+        // Cada molde define: qué grados diatónicos usa, qué acorde es el prestado,
+        // qué tipo de préstamo es (iv menor, bVII mixolidio, bVI menor), y en qué posición (1-4)
+        //
+        // Diatónicos en mayor: I=maj, ii=min, iii=min, IV=maj, V=maj, vi=min, vii°=dim
+        // Préstamos (desde menor paralela o mixolidio):
+        //   'iv'   = grado 4 minor (préstamo de la menor natural)
+        //   'bVII' = flat 7 major (préstamo de mixolidio / menor natural)
+        //   'bVI'  = flat 6 major (préstamo de menor natural)
+        //
+        // Los intervals son offsets desde la tónica en semitonos
+        // La cualidad se codifica en el "qual": 'maj', 'min'
+        const MOLD_CHORDS = {
+            'I':    { semitones: 0,  qual: 'maj', label: 'I'    },
+            'ii':   { semitones: 2,  qual: 'min', label: 'ii'   },
+            'iii':  { semitones: 4,  qual: 'min', label: 'iii'  },
+            'IV':   { semitones: 5,  qual: 'maj', label: 'IV'   },
+            'V':    { semitones: 7,  qual: 'maj', label: 'V'    },
+            'vi':   { semitones: 9,  qual: 'min', label: 'vi'   },
+            'iv':   { semitones: 5,  qual: 'min', label: 'iv'   },  // prestado: menor
+            'bVII': { semitones: 10, qual: 'maj', label: 'bVII' }, // prestado: mixolidio
+            'bVI':  { semitones: 8,  qual: 'maj', label: 'bVI'  }  // prestado: menor natural
+        };
+
+        // Moldes: cada uno tiene los 4 grados (Roman numeral) y cuál posición es el préstamo
+        // borrowType = 'iv' | 'bVII' | 'bVI'
+        // borrowPos  = 1-4 (posición 1-indexed del acorde prestado)
+        const INTERCHANGE_MOLDS = [
+            // Ej 1-9 (starter): solo 'iv' menor prestado
+            { id: 'iv_pos2', molds: ['I','iv','V','I'],    borrowType: 'iv',   borrowPos: 2, starter: true },
+            { id: 'iv_pos3', molds: ['I','IV','iv','I'],   borrowType: 'iv',   borrowPos: 3, starter: true },
+            { id: 'iv_pos3b',molds: ['I','vi','iv','V'],   borrowType: 'iv',   borrowPos: 3, starter: true },
+            { id: 'iv_pos4', molds: ['I','V','vi','iv'],   borrowType: 'iv',   borrowPos: 4, starter: true },
+            // Ej 10+ (all): agregan bVII y bVI
+            { id: 'bVII_pos2', molds: ['I','bVII','IV','I'], borrowType: 'bVII', borrowPos: 2, starter: false },
+            { id: 'bVII_pos3', molds: ['I','IV','bVII','I'], borrowType: 'bVII', borrowPos: 3, starter: false },
+            { id: 'bVI_pos2',  molds: ['I','bVI','IV','V'],  borrowType: 'bVI',  borrowPos: 2, starter: false },
+            { id: 'bVI_pos3',  molds: ['I','IV','bVI','V'],  borrowType: 'bVI',  borrowPos: 3, starter: false }
+        ];
+
+        // ==================== LEVEL 7: INTERVALOS ====================
+        // Todos los intervalos del libro, ordenados por semitonos (0 a 12)
+        // 'core' = los 8 más comunes (siempre incluidos)
+        // 'hard' = 4 difíciles (tritono, M6, M7, octava) — se suman desde ej 10
+        const INTERVALS_ALL = [
+            { id: 'P1',  name: 'Perfect Unison',  semitones: 0,  hard: false },
+            { id: 'm2',  name: 'Minor 2nd',       semitones: 1,  hard: false },
+            { id: 'M2',  name: 'Major 2nd',       semitones: 2,  hard: false },
+            { id: 'm3',  name: 'Minor 3rd',       semitones: 3,  hard: false },
+            { id: 'M3',  name: 'Major 3rd',       semitones: 4,  hard: false },
+            { id: 'P4',  name: 'Perfect 4th',     semitones: 5,  hard: false },
+            { id: 'TT',  name: 'Tritone',         semitones: 6,  hard: true  },
+            { id: 'P5',  name: 'Perfect 5th',     semitones: 7,  hard: false },
+            { id: 'm6',  name: 'Minor 6th',       semitones: 8,  hard: false },
+            { id: 'M6',  name: 'Major 6th',       semitones: 9,  hard: true  },
+            { id: 'm7',  name: 'Minor 7th',       semitones: 10, hard: false },
+            { id: 'M7',  name: 'Major 7th',       semitones: 11, hard: true  },
+            { id: 'P8',  name: 'Perfect Octave',  semitones: 12, hard: true  }
+        ];
+        const INTERVAL_CORE = INTERVALS_ALL.filter(i => !i.hard);
+        // 8ª (P8) es fácil, la agregamos al core (13-1 = 12 opciones no incluye la unísono; ajustamos)
+        // La P1 y P8 en realidad son fáciles pero suenan igual/octava; core queda: m2, M2, m3, M3, P4, P5, m6, m7 (8 tipos)
+
+        // ==================== LEVEL 8: SÉPTIMAS ====================
+        const SEVENTH_CHORDS = [
+            { id: 'maj7',  name: 'Major 7',           intervals: [0, 4, 7, 11], starter: true  },
+            { id: 'm7',    name: 'Minor 7',           intervals: [0, 3, 7, 10], starter: true  },
+            { id: 'dom7',  name: 'Dominant 7',        intervals: [0, 4, 7, 10], starter: true  },
+            { id: 'm7b5',  name: 'Minor 7 flat 5',    intervals: [0, 3, 6, 10], starter: false },
+            { id: 'dim7',  name: 'Diminished 7',      intervals: [0, 3, 6, 9],  starter: false }
+        ];
+        const SEVENTH_STARTER = SEVENTH_CHORDS.filter(c => c.starter);   // primeros 3 tipos
+        const SEVENTH_ALL = SEVENTH_CHORDS;                              // los 5 tipos
 
         function noteToFrequency(note, octave) {
             const pc = nameToPc(note);
@@ -1707,6 +1822,73 @@
                 level5_desc: 'Build scales note by note on the piano',
                 level6_name: 'Chord Progressions',
                 level6_desc: 'Build the most famous chord sequences',
+                level7_name: 'Interval Recognition',
+                level7_desc: 'Identify the interval between two notes',
+                level8_name: 'Seventh Chord Sonority',
+                level8_desc: 'Distinguish Maj7, m7, Dominant 7, m7b5 and dim7',
+                // Nombres de intervalos (Level 7)
+                intv_P1: 'Perfect Unison',
+                intv_m2: 'Minor 2nd',
+                intv_M2: 'Major 2nd',
+                intv_m3: 'Minor 3rd',
+                intv_M3: 'Major 3rd',
+                intv_P4: 'Perfect 4th',
+                intv_TT: 'Tritone',
+                intv_P5: 'Perfect 5th',
+                intv_m6: 'Minor 6th',
+                intv_M6: 'Major 6th',
+                intv_m7: 'Minor 7th',
+                intv_M7: 'Major 7th',
+                intv_P8: 'Perfect Octave',
+                q_interval: 'What interval is this?',
+                // Tipos de séptima (Level 8)
+                s7_maj7: 'Major 7',
+                s7_m7: 'Minor 7',
+                s7_dom7: 'Dominant 7',
+                s7_m7b5: 'Minor 7 flat 5',
+                s7_dim7: 'Diminished 7',
+                q_seventh: 'What 7th chord is this?',
+                level9_name: 'Chord Extensions',
+                level9_desc: 'Identify 9, 11, 13 and altered extensions',
+                level10_name: 'Melodic Minor Modes',
+                level10_desc: 'Recognize the 7 modes of the melodic minor scale',
+                // Extensiones (Level 9)
+                ext_9:   'Natural 9',
+                ext_11:  'Natural 11',
+                ext_13:  'Natural 13',
+                ext_b9:  'Flat 9',
+                ext_sharp9:  'Sharp 9',
+                ext_sharp11: 'Sharp 11',
+                ext_b13: 'Flat 13',
+                q_extension: 'What extension is this?',
+                // Modos de Menor Melódica (Level 10)
+                mmm_melodic_minor:    'Melodic Minor',
+                mmm_dorian_b2:        'Dorian b2',
+                mmm_lydian_augmented: 'Lydian Augmented',
+                mmm_lydian_dominant:  'Lydian Dominant',
+                mmm_mixolydian_b6:    'Mixolydian b6',
+                mmm_half_diminished:  'Half-Diminished',
+                mmm_altered:          'Altered',
+                q_melodic_minor_mode: 'What melodic minor mode is this?',
+                level11_name: 'ii-V-I Recognition',
+                level11_desc: 'Identify the key of a ii-V-I cadence',
+                level12_name: 'Modal Interchange',
+                level12_desc: 'Find the borrowed chord in a progression',
+                // Preguntas Level 11
+                q_key_of_cadence: 'What key is this cadence in?',
+                q_key_and_mode: 'What key and mode?',
+                mode_word_major: 'major',
+                mode_word_minor: 'minor',
+                // Preguntas y respuestas Level 12
+                q_borrowed_position: 'Which chord is borrowed?',
+                q_borrowed_type: 'Which chord is borrowed?',
+                borrow_pos_1: '1st chord',
+                borrow_pos_2: '2nd chord',
+                borrow_pos_3: '3rd chord',
+                borrow_pos_4: '4th chord',
+                borrow_type_iv:   'iv (minor)',
+                borrow_type_bVII: 'bVII (mixolydian)',
+                borrow_type_bVI:  'bVI (minor)',
                 // Categorías del Level 6
                 progcat_cadences: 'Traditional Cadences',
                 progcat_short_major: 'Short Major Progressions',
@@ -1764,6 +1946,8 @@
                 scale_minor_pentatonic: 'Minor Pentatonic',
                 scale_major_blues: 'Major Blues',
                 scale_minor_blues: 'Minor Blues',
+                scale_harmonic_major: 'Harmonic Major',
+                scale_double_harmonic_major: 'Double Harmonic Major',
                 tona_major: 'major',
                 tona_natural_minor: 'natural minor',
                 tona_harmonic_minor: 'harmonic minor',
@@ -1849,6 +2033,67 @@
                 level5_desc: 'Construye escalas nota por nota en el piano',
                 level6_name: 'Progresiones de Acordes',
                 level6_desc: 'Construye las secuencias de acordes más famosas',
+                level7_name: 'Reconocimiento de Intervalos',
+                level7_desc: 'Identifica el intervalo entre dos notas',
+                level8_name: 'Sonoridad de Séptimas',
+                level8_desc: 'Distingue Maj7, m7, Dominante 7, m7b5 y dim7',
+                intv_P1: 'Unísono Justo',
+                intv_m2: '2ª menor',
+                intv_M2: '2ª Mayor',
+                intv_m3: '3ª menor',
+                intv_M3: '3ª Mayor',
+                intv_P4: '4ª Justa',
+                intv_TT: 'Tritono',
+                intv_P5: '5ª Justa',
+                intv_m6: '6ª menor',
+                intv_M6: '6ª Mayor',
+                intv_m7: '7ª menor',
+                intv_M7: '7ª Mayor',
+                intv_P8: 'Octava Justa',
+                q_interval: '¿Qué intervalo es este?',
+                s7_maj7: 'Mayor 7',
+                s7_m7: 'menor 7',
+                s7_dom7: 'Dominante 7',
+                s7_m7b5: 'menor 7 con quinta bemol',
+                s7_dim7: 'Disminuido 7',
+                q_seventh: '¿Qué acorde de séptima es este?',
+                level9_name: 'Extensiones de Acordes',
+                level9_desc: 'Identifica extensiones 9, 11, 13 y alteradas',
+                level10_name: 'Modos de Menor Melódica',
+                level10_desc: 'Reconoce los 7 modos de la escala menor melódica',
+                ext_9:   'Novena Natural',
+                ext_11:  'Onceava Natural',
+                ext_13:  'Treceava Natural',
+                ext_b9:  'Novena bemol',
+                ext_sharp9:  'Novena sostenida',
+                ext_sharp11: 'Onceava sostenida',
+                ext_b13: 'Treceava bemol',
+                q_extension: '¿Qué extensión es esta?',
+                mmm_melodic_minor:    'Menor Melódica',
+                mmm_dorian_b2:        'Dórico b2',
+                mmm_lydian_augmented: 'Lidio Aumentado',
+                mmm_lydian_dominant:  'Lidio Dominante',
+                mmm_mixolydian_b6:    'Mixolidio b6',
+                mmm_half_diminished:  'Semi-disminuido',
+                mmm_altered:          'Alterada',
+                q_melodic_minor_mode: '¿Qué modo de menor melódica es este?',
+                level11_name: 'Reconocimiento ii-V-I',
+                level11_desc: 'Identifica la tonalidad de una cadencia ii-V-I',
+                level12_name: 'Intercambio Modal',
+                level12_desc: 'Encuentra el acorde prestado en una progresión',
+                q_key_of_cadence: '¿En qué tonalidad está esta cadencia?',
+                q_key_and_mode: '¿Qué tonalidad y modo?',
+                mode_word_major: 'mayor',
+                mode_word_minor: 'menor',
+                q_borrowed_position: '¿Qué acorde es el prestado?',
+                q_borrowed_type: '¿Qué acorde es el prestado?',
+                borrow_pos_1: '1er acorde',
+                borrow_pos_2: '2do acorde',
+                borrow_pos_3: '3er acorde',
+                borrow_pos_4: '4to acorde',
+                borrow_type_iv:   'iv (menor)',
+                borrow_type_bVII: 'bVII (mixolidio)',
+                borrow_type_bVI:  'bVI (menor)',
                 progcat_cadences: 'Cadencias Tradicionales',
                 progcat_short_major: 'Progresiones Cortas en Mayor',
                 progcat_short_minor: 'Progresiones Cortas en menor',
@@ -1903,6 +2148,8 @@
                 scale_minor_pentatonic: 'Pentat\u00f3nica Menor',
                 scale_major_blues: 'Blues Mayor',
                 scale_minor_blues: 'Blues Menor',
+                scale_harmonic_major: 'Mayor Arm\u00f3nica',
+                scale_double_harmonic_major: 'Doble Mayor Arm\u00f3nica',
                 tona_major: 'mayor',
                 tona_natural_minor: 'menor natural',
                 tona_harmonic_minor: 'menor arm\u00f3nica',
@@ -2018,6 +2265,26 @@
                 if (lid === 2) return this.t('func_' + option);
                 if (lid === 3) return this.t('mode_' + option);
                 if (lid === 4) return this.t('qual_' + option);
+                if (lid === 7) return this.t('intv_' + option);
+                if (lid === 8) return this.t('s7_' + option);
+                if (lid === 9) return this.t('ext_' + option);
+                if (lid === 10) return this.t('mmm_' + option);
+                if (lid === 11) {
+                    // Formato "C" o "C_major"/"C_minor"
+                    if (option.includes('_')) {
+                        const [key, mode] = option.split('_');
+                        return `${this.noteDisp(key)} ${this.t('mode_word_' + mode)}`;
+                    }
+                    return this.noteDisp(option);
+                }
+                if (lid === 12) {
+                    // Si la pregunta pide posición: '1','2','3','4' → "1st chord" etc.
+                    if (option === '1' || option === '2' || option === '3' || option === '4') {
+                        return this.t('borrow_pos_' + option);
+                    }
+                    // Si pide tipo: 'iv','bVII','bVI' → "iv (menor)" etc.
+                    return this.t('borrow_type_' + option);
+                }
                 return option;
             },
 
@@ -2190,6 +2457,42 @@
                     name: 'Chord Progressions',
                     description: 'Build the most famous chord sequences',
                     unlocked: true
+                },
+                {
+                    id: 7,
+                    name: 'Interval Recognition',
+                    description: 'Identify the interval between two notes',
+                    unlocked: true
+                },
+                {
+                    id: 8,
+                    name: 'Seventh Chord Sonority',
+                    description: 'Distinguish Maj7, m7, Dominant 7, m7b5 and dim7',
+                    unlocked: true
+                },
+                {
+                    id: 9,
+                    name: 'Chord Extensions',
+                    description: 'Identify 9, 11, 13 and altered extensions',
+                    unlocked: true
+                },
+                {
+                    id: 10,
+                    name: 'Melodic Minor Modes',
+                    description: 'Recognize the 7 modes of the melodic minor scale',
+                    unlocked: true
+                },
+                {
+                    id: 11,
+                    name: 'ii-V-I Recognition',
+                    description: 'Identify the key of a ii-V-I cadence',
+                    unlocked: true
+                },
+                {
+                    id: 12,
+                    name: 'Modal Interchange',
+                    description: 'Find the borrowed chord in a progression',
+                    unlocked: true
                 }
             ],
 
@@ -2257,8 +2560,8 @@
                         });
                         
                         progressHtml = `<div class="exercise-progress">${blocksHtml}</div>`;
-                    } else if (level.id === 3 || level.id === 4) {
-                        // Levels 3 y 4: una sola barra de progreso de 20 ejercicios
+                    } else if (level.id === 3 || level.id === 4 || level.id === 7 || level.id === 8 || level.id === 9 || level.id === 10 || level.id === 11 || level.id === 12) {
+                        // Levels 3, 4, 7, 8, 9, 10, 11 y 12: una sola barra de progreso de 20 ejercicios
                         const currentExercise = this.getUserExerciseProgress(`${level.id}_main`);
                         const progressPercent = (currentExercise / 20) * 100;
                         progressHtml = `
@@ -2275,14 +2578,14 @@
                         `;
                     } else if (level.id === 5) {
                         // Learn Scales: progreso real de escalas completadas
-                        const slTypes = ['major', 'natural_minor', 'harmonic_minor', 'melodic_minor', 'major_pentatonic', 'minor_pentatonic', 'major_blues', 'minor_blues'];
+                        const slTypes = ['major', 'natural_minor', 'harmonic_minor', 'melodic_minor', 'major_pentatonic', 'minor_pentatonic', 'major_blues', 'minor_blues', 'harmonic_major', 'double_harmonic_major'];
                         const doneCount = slTypes.filter(t => localStorage.getItem(`music_quiz_sl_${t}_done`) === '1').length;
-                        const progressPercent = (doneCount / 8) * 100;
+                        const progressPercent = (doneCount / 10) * 100;
                         progressHtml = `
                             <div class="exercise-progress">
                                 <div style="margin-bottom: 12px;">
                                     <div style="font-size: 11px; margin-bottom: 3px; color: #666; font-weight: 600;">
-                                        ${this.t('scales_completed')}: ${doneCount}/8
+                                        ${this.t('scales_completed')}: ${doneCount}/10
                                     </div>
                                     <div class="progress-bar-small">
                                         <div class="progress-fill-small" style="width: ${progressPercent}%"></div>
@@ -2849,6 +3152,307 @@
                             }
                         });
                     }
+                } else if (levelId === 7) {
+                    // Level 7: Reconocimiento de intervalos
+                    // Ej 1-7: melódico ascendente, 8-13: descendente, 14-20: armónico
+                    // Ej 1-9: solo intervalos "core"; Ej 10+: incluye los difíciles (TT, M6, M7, P8)
+                    const allNotesChromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+                    const ex = this.currentExercise || 1;
+                    let playMode;
+                    if (this.isChallengeMode) {
+                        playMode = 'random';
+                    } else if (ex <= 7) {
+                        playMode = 'ascending';
+                    } else if (ex <= 13) {
+                        playMode = 'descending';
+                    } else {
+                        playMode = 'harmonic';
+                    }
+                    // Pool de intervalos por dificultad
+                    let intvPool;
+                    if (this.isChallengeMode || ex >= 10) {
+                        intvPool = INTERVALS_ALL.filter(i => i.semitones > 0); // sin unísono
+                    } else {
+                        intvPool = INTERVAL_CORE.filter(i => i.semitones > 0);
+                    }
+                    const intvIds = intvPool.map(i => i.id);
+                    let lastIntvIdx = -1;
+
+                    for (let i = 0; i < 10; i++) {
+                        const idx = this.getRandomIndex(intvPool.length, lastIntvIdx);
+                        lastIntvIdx = idx;
+                        const interval = intvPool[idx];
+                        // Nota base aleatoria
+                        const baseNote = allNotesChromatic[Math.floor(Math.random() * 12)];
+
+                        // Modo de reproducción de ESTA pregunta
+                        let thisMode = playMode;
+                        if (playMode === 'random') {
+                            const modes = ['ascending', 'descending', 'harmonic'];
+                            thisMode = modes[Math.floor(Math.random() * 3)];
+                        }
+
+                        // 4 opciones: la correcta + 3 distractores del pool
+                        const options = [interval.id];
+                        while (options.length < 4) {
+                            const cand = intvIds[Math.floor(Math.random() * intvIds.length)];
+                            if (!options.includes(cand)) options.push(cand);
+                        }
+
+                        this.questions.push({
+                            question: this.t('q_interval'),
+                            correct: interval.id,
+                            options: options.sort(() => Math.random() - 0.5),
+                            audio: {
+                                type: 'interval',
+                                playMode: thisMode,
+                                baseNote: baseNote,
+                                baseOctave: 4,
+                                semitones: interval.semitones
+                            }
+                        });
+                    }
+                } else if (levelId === 8) {
+                    // Level 8: Sonoridad de acordes de 7ª
+                    // Ej 1-9: solo 3 tipos (maj7, m7, dom7). Ej 10+: los 5 tipos.
+                    const allNotesChromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                    const ex = this.currentExercise || 1;
+                    const pool = (this.isChallengeMode || ex >= 10) ? SEVENTH_ALL : SEVENTH_STARTER;
+                    const poolIds = pool.map(c => c.id);
+                    let lastIdx = -1;
+
+                    for (let i = 0; i < 10; i++) {
+                        const idx = this.getRandomIndex(pool.length, lastIdx);
+                        lastIdx = idx;
+                        const seventh = pool[idx];
+                        const baseNote = allNotesChromatic[Math.floor(Math.random() * 12)];
+
+                        // 4 opciones: la correcta + 3 distractores (o todos los del pool si son <=4)
+                        let options;
+                        if (poolIds.length <= 4) {
+                            options = [...poolIds];
+                        } else {
+                            options = [seventh.id];
+                            while (options.length < 4) {
+                                const cand = poolIds[Math.floor(Math.random() * poolIds.length)];
+                                if (!options.includes(cand)) options.push(cand);
+                            }
+                        }
+
+                        this.questions.push({
+                            question: this.t('q_seventh'),
+                            correct: seventh.id,
+                            options: options.sort(() => Math.random() - 0.5),
+                            audio: {
+                                type: 'chord',
+                                intervals: seventh.intervals,
+                                baseNote: baseNote,
+                                baseOctave: 4
+                            }
+                        });
+                    }
+                } else if (levelId === 9) {
+                    // Level 9: Extensiones de acordes
+                    // Ej 1-9: solo 3 tipos naturales (9, 11, 13). Ej 10+: los 7 tipos.
+                    const allNotesChromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                    const ex = this.currentExercise || 1;
+                    const pool = (this.isChallengeMode || ex >= 10) ? CHORD_EXTENSIONS : CHORD_EXTENSIONS.filter(c => c.starter);
+                    const poolIds = pool.map(c => c.id);
+                    let lastIdx = -1;
+
+                    for (let i = 0; i < 10; i++) {
+                        const idx = this.getRandomIndex(pool.length, lastIdx);
+                        lastIdx = idx;
+                        const ext = pool[idx];
+                        const baseNote = allNotesChromatic[Math.floor(Math.random() * 12)];
+
+                        // 4 opciones: la correcta + 3 distractores (o todos los del pool si son <=4)
+                        let options;
+                        if (poolIds.length <= 4) {
+                            options = [...poolIds];
+                        } else {
+                            options = [ext.id];
+                            while (options.length < 4) {
+                                const cand = poolIds[Math.floor(Math.random() * poolIds.length)];
+                                if (!options.includes(cand)) options.push(cand);
+                            }
+                        }
+
+                        this.questions.push({
+                            question: this.t('q_extension'),
+                            correct: ext.id,
+                            options: options.sort(() => Math.random() - 0.5),
+                            audio: {
+                                type: 'chord',
+                                intervals: ext.intervals,
+                                baseNote: baseNote,
+                                baseOctave: 4
+                            }
+                        });
+                    }
+                } else if (levelId === 10) {
+                    // Level 10: Modos de menor melódica (formato como Level 3)
+                    const allNotesChromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                    const modeIds = MELODIC_MINOR_MODES.map(m => m.id);
+                    let lastIdx = -1;
+
+                    for (let i = 0; i < 10; i++) {
+                        const idx = this.getRandomIndex(MELODIC_MINOR_MODES.length, lastIdx);
+                        lastIdx = idx;
+                        const mode = MELODIC_MINOR_MODES[idx];
+                        const baseNote = allNotesChromatic[Math.floor(Math.random() * 12)];
+
+                        // 4 opciones
+                        const options = [mode.id];
+                        while (options.length < 4) {
+                            const cand = modeIds[Math.floor(Math.random() * modeIds.length)];
+                            if (!options.includes(cand)) options.push(cand);
+                        }
+
+                        this.questions.push({
+                            question: this.t('q_melodic_minor_mode'),
+                            correct: mode.id,
+                            options: options.sort(() => Math.random() - 0.5),
+                            audio: {
+                                type: 'scale',
+                                intervals: [...mode.intervals, 12], // agregar octava para sonar completa
+                                baseNote: baseNote,
+                                baseOctave: 4,
+                                isModesScale: true // usa el mismo tempo fluido de Greek Modes
+                            }
+                        });
+                    }
+                } else if (levelId === 11) {
+                    // Level 11: Reconocimiento ii-V-I
+                    // Ej 1-7: solo mayor. Ej 8-13: mayor + menor. Ej 14-20: mayor + menor + pregunta modo.
+                    const ex = this.currentExercise || 1;
+                    let allowMinor, askMode;
+                    if (this.isChallengeMode) {
+                        allowMinor = true;
+                        askMode = true;
+                    } else if (ex <= 7) {
+                        allowMinor = false;
+                        askMode = false;
+                    } else if (ex <= 13) {
+                        allowMinor = true;
+                        askMode = false;
+                    } else {
+                        allowMinor = true;
+                        askMode = true;
+                    }
+
+                    let lastKeyIdx = -1;
+                    for (let i = 0; i < 10; i++) {
+                        // Elegir modo (mayor/menor) de esta pregunta
+                        const isMinor = allowMinor && Math.random() < 0.4;
+                        const keyPool = isMinor ? KEYS_MINOR : KEYS_MAJOR;
+                        const kIdx = this.getRandomIndex(keyPool.length, lastKeyIdx);
+                        lastKeyIdx = kIdx;
+                        const tonic = keyPool[kIdx];
+                        const mode = isMinor ? 'minor' : 'major';
+
+                        // Construir cadencia ii-V-I (o ii°-V-i para menor)
+                        // Mayor: iim7-V7-Imaj7  →  intervals de raíz: [2, 7, 0], calidades [m7, dom7, maj7]
+                        // Menor: iim7b5-V7-i    →  intervals de raíz: [2, 7, 0], calidades [m7b5, dom7, min]
+                        const tonicPc = nameToPc(tonic);
+                        const chords = isMinor ? [
+                            { rootOffset: 2, intervals: [0, 3, 6, 10] }, // iim7b5
+                            { rootOffset: 7, intervals: [0, 4, 7, 10] }, // V7
+                            { rootOffset: 0, intervals: [0, 3, 7]     }  // i (triada menor)
+                        ] : [
+                            { rootOffset: 2, intervals: [0, 3, 7, 10] }, // iim7
+                            { rootOffset: 7, intervals: [0, 4, 7, 10] }, // V7
+                            { rootOffset: 0, intervals: [0, 4, 7, 11] }  // Imaj7
+                        ];
+
+                        // Respuesta correcta: "C_major" o "C_minor"
+                        const correctAnswer = askMode ? `${tonic}_${mode}` : tonic;
+
+                        // Generar 4 opciones
+                        const options = [correctAnswer];
+                        while (options.length < 4) {
+                            const candKey = keyPool[Math.floor(Math.random() * keyPool.length)];
+                            const candMode = askMode
+                                ? (Math.random() < 0.5 ? 'major' : 'minor')
+                                : null;
+                            const cand = askMode ? `${candKey}_${candMode}` : candKey;
+                            if (!options.includes(cand)) options.push(cand);
+                        }
+
+                        this.questions.push({
+                            question: askMode ? this.t('q_key_and_mode') : this.t('q_key_of_cadence'),
+                            correct: correctAnswer,
+                            options: options.sort(() => Math.random() - 0.5),
+                            audio: {
+                                type: 'cadence',
+                                tonicPc: tonicPc,
+                                tonicOctave: 4,
+                                chords: chords
+                            }
+                        });
+                    }
+                } else if (levelId === 12) {
+                    // Level 12: Intercambio modal
+                    // Ej 1-9: solo 'iv' prestado, pregunta POSICIÓN. Ej 10+: los 3 tipos, pregunta TIPO.
+                    const ex = this.currentExercise || 1;
+                    const askType = this.isChallengeMode || ex >= 10;
+                    const pool = askType
+                        ? INTERCHANGE_MOLDS
+                        : INTERCHANGE_MOLDS.filter(m => m.starter);
+
+                    let lastMoldIdx = -1;
+                    let lastKeyIdx = -1;
+                    for (let i = 0; i < 10; i++) {
+                        // Elegir molde
+                        const mIdx = this.getRandomIndex(pool.length, lastMoldIdx);
+                        lastMoldIdx = mIdx;
+                        const molds = pool[mIdx];
+
+                        // Elegir tonalidad (siempre mayor, ya que el préstamo se define respecto a I mayor)
+                        const kIdx = this.getRandomIndex(KEYS_MAJOR.length, lastKeyIdx);
+                        lastKeyIdx = kIdx;
+                        const tonic = KEYS_MAJOR[kIdx];
+                        const tonicPc = nameToPc(tonic);
+
+                        // Construir los 4 acordes con intervals absolutos
+                        const chords = molds.molds.map(gradeId => {
+                            const g = MOLD_CHORDS[gradeId];
+                            const rootOffset = g.semitones;
+                            const chordIntervals = g.qual === 'min' ? [0, 3, 7] : [0, 4, 7];
+                            return { rootOffset, intervals: chordIntervals };
+                        });
+
+                        let correctAnswer, options, question;
+                        if (askType) {
+                            // Preguntar QUÉ TIPO de préstamo (iv, bVII, bVI)
+                            correctAnswer = molds.borrowType;
+                            const allTypes = ['iv', 'bVII', 'bVI'];
+                            options = [correctAnswer];
+                            while (options.length < 3) {
+                                const cand = allTypes[Math.floor(Math.random() * allTypes.length)];
+                                if (!options.includes(cand)) options.push(cand);
+                            }
+                            question = this.t('q_borrowed_type');
+                        } else {
+                            // Preguntar QUÉ POSICIÓN (1st, 2nd, 3rd, 4th)
+                            correctAnswer = String(molds.borrowPos);
+                            options = ['1','2','3','4'];
+                            question = this.t('q_borrowed_position');
+                        }
+
+                        this.questions.push({
+                            question: question,
+                            correct: correctAnswer,
+                            options: options.sort(() => Math.random() - 0.5),
+                            audio: {
+                                type: 'progression',
+                                tonicPc: tonicPc,
+                                tonicOctave: 4,
+                                chords: chords
+                            }
+                        });
+                    }
                 }
             },
 
@@ -2869,8 +3473,8 @@
                         // En practice o challenge mode, siempre empezar en 1
                         this.currentExercise = 1;
                     }
-                } else if (levelId === 3 || levelId === 4) {
-                    // Levels 3 y 4 también progresan por 20 ejercicios
+                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) {
+                    // Levels 3, 4, 7, 8, 9, 10, 11 y 12 también progresan por 20 ejercicios
                     // (clave propia '_main' para no depender del currentScaleMode)
                     if (!this.isChallengeMode) {
                         this.currentExercise = this.getUserExerciseProgress(`${levelId}_main`) || 1;
@@ -2985,7 +3589,7 @@
                     titleText += ` (${this.t('practice_word')}: ${this.noteDisp(this.practiceNote)} ${this.tonaName(this.currentScaleMode)})`;
                 } else if (this.currentLevel.id === 1 || this.currentLevel.id === 2) {
                     titleText += ` (${this.tonaName(this.currentScaleMode)}) - ${this.t('exercise')} ${this.currentExercise}/20`;
-                } else if (this.currentLevel.id === 3 || this.currentLevel.id === 4) {
+                } else if (this.currentLevel.id === 3 || this.currentLevel.id === 4 || this.currentLevel.id === 7 || this.currentLevel.id === 8 || this.currentLevel.id === 9 || this.currentLevel.id === 10 || this.currentLevel.id === 11 || this.currentLevel.id === 12) {
                     titleText += ` - ${this.t('exercise')} ${this.currentExercise}/20`;
                 }
 
@@ -3166,6 +3770,58 @@
                     playSequence(freqs, 0.35, 0);
                     // Acorde bloqueado justo cuando termina el arpegio
                     setTimeout(() => playChord(freqs, 1.2), freqs.length * 0.35 * 1000);
+                } else if (q.audio.type === 'interval') {
+                    // Level 7: dos notas separadas por N semitonos
+                    const f1 = baseFreq;
+                    const f2 = baseFreq * Math.pow(2, q.audio.semitones / 12);
+                    if (q.audio.playMode === 'harmonic') {
+                        // Ambas notas suenan a la vez, sostenidas
+                        this.lockAudioButtons(1500);
+                        playChord([f1, f2], 1.3);
+                    } else if (q.audio.playMode === 'descending') {
+                        // Nota alta primero, después la base
+                        this.lockAudioButtons(1400);
+                        playSequence([f2, f1], 0.55, 0);
+                    } else {
+                        // Ascending (default)
+                        this.lockAudioButtons(1400);
+                        playSequence([f1, f2], 0.55, 0);
+                    }
+                } else if (q.audio.type === 'cadence') {
+                    // Level 11: cadencia ii-V-I completa
+                    // Cada acorde suena bloqueado por 0.9s + una pausa breve + tónica final aislada
+                    const tonicBase = 440 * Math.pow(2, (q.audio.tonicPc + (q.audio.tonicOctave - 4) * 12 - 9) / 12);
+                    const chordDuration = 0.9;
+                    const chordGap = 100; // ms entre acordes
+                    const chordCount = q.audio.chords.length;
+                    // Duración total: 3 acordes + pausa + tónica final
+                    const totalMs = chordCount * (chordDuration * 1000 + chordGap) + 800 + 400;
+                    this.lockAudioButtons(totalMs);
+
+                    q.audio.chords.forEach((chord, ci) => {
+                        const chordRootFreq = tonicBase * Math.pow(2, chord.rootOffset / 12);
+                        const freqs = chord.intervals.map(iv => chordRootFreq * Math.pow(2, iv / 12));
+                        setTimeout(() => playChord(freqs, chordDuration), ci * (chordDuration * 1000 + chordGap));
+                    });
+
+                    // Tónica sola al final para confirmar el reposo tonal
+                    setTimeout(() => {
+                        playChord([tonicBase], 0.7);
+                    }, chordCount * (chordDuration * 1000 + chordGap) + 250);
+                } else if (q.audio.type === 'progression') {
+                    // Level 12: progresión de 4 acordes bloqueados (sin tónica final)
+                    const tonicBase = 440 * Math.pow(2, (q.audio.tonicPc + (q.audio.tonicOctave - 4) * 12 - 9) / 12);
+                    const chordDuration = 0.9;
+                    const chordGap = 100;
+                    const chordCount = q.audio.chords.length;
+                    const totalMs = chordCount * (chordDuration * 1000 + chordGap) + 400;
+                    this.lockAudioButtons(totalMs);
+
+                    q.audio.chords.forEach((chord, ci) => {
+                        const chordRootFreq = tonicBase * Math.pow(2, chord.rootOffset / 12);
+                        const freqs = chord.intervals.map(iv => chordRootFreq * Math.pow(2, iv / 12));
+                        setTimeout(() => playChord(freqs, chordDuration), ci * (chordDuration * 1000 + chordGap));
+                    });
                 }
             },
 
@@ -3306,12 +3962,12 @@
                         this.saveExerciseProgress(levelId, 20);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('level_completed').replace('{name}', this.getLevelName(levelId))}</div>`;
                         document.getElementById('retryBtn').textContent = this.t('back_menu');
-                    } else if ((levelId === 3 || levelId === 4) && this.currentExercise < 20) {
-                        // Levels 3 y 4 también progresan al siguiente ejercicio
+                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) && this.currentExercise < 20) {
+                        // Levels 3, 4, 7, 8, 9, 10, 11 y 12 progresan al siguiente ejercicio
                         this.saveExerciseProgress(`${levelId}_main`, this.currentExercise + 1);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('ex_complete').replace('{n}', this.currentExercise)}</div>`;
                         document.getElementById('retryBtn').textContent = this.t('next_exercise');
-                    } else if ((levelId === 3 || levelId === 4) && this.currentExercise === 20) {
+                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) && this.currentExercise === 20) {
                         // Ejercicio 20 completado
                         this.saveExerciseProgress(`${levelId}_main`, 20);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('level_completed').replace('{name}', this.getLevelName(levelId))}</div>`;
@@ -3367,7 +4023,7 @@
                         // No pasó, reintentar el mismo ejercicio
                         this.startLevel(levelId);
                     }
-                } else if (levelId === 3 || levelId === 4) {
+                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) {
                     if (passed && this.currentExercise < 20) {
                         // Pasó el ejercicio, ir al siguiente (startLevel lee el progreso guardado)
                         this.startLevel(levelId);
@@ -3393,7 +4049,9 @@
                 'major_pentatonic': [0, 2, 4, 7, 9],
                 'minor_pentatonic': [0, 3, 5, 7, 10],
                 'major_blues':      [0, 2, 3, 4, 7, 9],
-                'minor_blues':      [0, 3, 5, 6, 7, 10]
+                'minor_blues':      [0, 3, 5, 6, 7, 10],
+                'harmonic_major':        [0, 2, 4, 5, 7, 8, 11],
+                'double_harmonic_major': [0, 1, 4, 5, 7, 8, 11]
             },
 
             slScaleNames: {
@@ -3404,7 +4062,9 @@
                 'major_pentatonic': 'Major Pentatonic',
                 'minor_pentatonic': 'Minor Pentatonic',
                 'major_blues': 'Major Blues',
-                'minor_blues': 'Minor Blues'
+                'minor_blues': 'Minor Blues',
+                'harmonic_major': 'Harmonic Major',
+                'double_harmonic_major': 'Double Harmonic Major'
             },
 
             showScaleLearnSelector() {
