@@ -1330,6 +1330,42 @@
         // ==================== AUDIO ENGINE ====================
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
+        // ==================== CADENA DE EFECTOS MAESTRA (Rhodes+FX) ====================
+        // Todas las voces entran por fxIn y salen por: dry + reverb de convolución → compresor
+        const fxCompressor = audioContext.createDynamicsCompressor();
+        fxCompressor.threshold.value = -20;
+        fxCompressor.ratio.value = 3;
+        fxCompressor.attack.value = 0.004;
+        fxCompressor.release.value = 0.22;
+
+        const fxDryGain = audioContext.createGain();
+        fxDryGain.gain.value = 0.78;
+        const fxWetGain = audioContext.createGain();
+        fxWetGain.gain.value = 0.30;
+
+        const fxReverb = audioContext.createConvolver();
+        // Respuesta de impulso generada por código: ruido estéreo con decay exponencial
+        // (sala de ~1.7s, cero KB de samples, funciona offline)
+        (function buildReverbIR() {
+            const len = Math.floor(audioContext.sampleRate * 1.7);
+            const ir = audioContext.createBuffer(2, len, audioContext.sampleRate);
+            for (let ch = 0; ch < 2; ch++) {
+                const d = ir.getChannelData(ch);
+                for (let i = 0; i < len; i++) {
+                    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6);
+                }
+            }
+            fxReverb.buffer = ir;
+        })();
+
+        const fxIn = audioContext.createGain();
+        fxIn.connect(fxDryGain);
+        fxDryGain.connect(fxCompressor);
+        fxIn.connect(fxReverb);
+        fxReverb.connect(fxWetGain);
+        fxWetGain.connect(fxCompressor);
+        fxCompressor.connect(audioContext.destination);
+
         // Resume audio context on first user interaction
         function resumeAudioContext() {
             if (audioContext.state === 'suspended') {
@@ -1639,48 +1675,53 @@
 
         // Síntesis tipo piano: fundamental + armónicos con envolvente percusiva y filtro
         function playPianoVoice(frequency, duration, destination, velocity = 1) {
+            // ==================== VOZ RHODES FM (2 operadores + tine) ====================
+            // El parámetro destination se conserva por compatibilidad, pero todas las
+            // voces salen por la cadena maestra fxIn (reverb + compresor).
             const now = audioContext.currentTime;
 
-            // Armónicos como los de una cuerda de piano (amplitud decreciente)
-            const harmonics = [
-                { mult: 1,    gain: 0.60 },
-                { mult: 2,    gain: 0.22 },
-                { mult: 3,    gain: 0.10 },
-                { mult: 4,    gain: 0.05 },
-                { mult: 5.01, gain: 0.03 }  // leve inarmonicidad, como cuerda real
-            ];
+            // Portadora
+            const carrier = audioContext.createOscillator();
+            carrier.type = 'sine';
+            carrier.frequency.value = frequency;
 
-            // Filtro pasa-bajos: suaviza los agudos (el "brillo" metálico del beep)
-            const filter = audioContext.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(Math.min(frequency * 7, 7500), now);
-            filter.frequency.exponentialRampToValueAtTime(Math.min(frequency * 2.5, 2500), now + duration);
-            filter.Q.value = 0.4;
+            // Modulador 1:1 → el "cuerpo" FM clásico del piano eléctrico
+            const mod = audioContext.createOscillator();
+            mod.type = 'sine';
+            mod.frequency.value = frequency;
+            const modGain = audioContext.createGain();
+            // Índice de modulación: brillante al ataque, se apaga.
+            // Key-scaling: menos brillo en notas agudas para que no chillen
+            const brightness = Math.max(0.6, 2.4 - frequency / 500);
+            modGain.gain.setValueAtTime(frequency * brightness, now);
+            modGain.gain.exponentialRampToValueAtTime(frequency * 0.12, now + 0.55);
+            mod.connect(modGain);
+            modGain.connect(carrier.frequency);
 
-            // Envolvente maestra: ataque percusivo + decaimiento natural con cola
-            const master = audioContext.createGain();
-            const peak = 0.26 * velocity;
-            master.gain.setValueAtTime(0.0001, now);
-            master.gain.exponentialRampToValueAtTime(peak, now + 0.008);           // ataque de martillo
-            master.gain.exponentialRampToValueAtTime(peak * 0.45, now + duration * 0.6); // decaimiento
-            master.gain.exponentialRampToValueAtTime(0.0001, now + duration + 0.35);     // cola/release
+            // Envolvente del cuerpo
+            const amp = audioContext.createGain();
+            const peak = 0.30 * velocity;
+            amp.gain.setValueAtTime(0.0001, now);
+            amp.gain.exponentialRampToValueAtTime(peak, now + 0.004);
+            amp.gain.exponentialRampToValueAtTime(peak * 0.42, now + duration * 0.7);
+            amp.gain.exponentialRampToValueAtTime(0.0001, now + duration + 0.6);
+            carrier.connect(amp);
+            amp.connect(fxIn);
 
-            master.connect(filter);
-            filter.connect(destination);
+            // "Tine": campanita metálica del ataque (4º parcial, muy corta)
+            const tine = audioContext.createOscillator();
+            tine.type = 'sine';
+            tine.frequency.value = frequency * 4;
+            const tGain = audioContext.createGain();
+            const tPeak = 0.06 * velocity * Math.max(0.3, 1.4 - frequency / 700);
+            tGain.gain.setValueAtTime(tPeak, now);
+            tGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+            tine.connect(tGain);
+            tGain.connect(fxIn);
 
-            harmonics.forEach(h => {
-                const osc = audioContext.createOscillator();
-                const g = audioContext.createGain();
-                osc.type = 'sine';
-                osc.frequency.value = frequency * h.mult;
-                // Los armónicos superiores decaen más rápido que la fundamental
-                g.gain.setValueAtTime(h.gain, now);
-                g.gain.exponentialRampToValueAtTime(Math.max(h.gain * 0.15, 0.0001), now + duration);
-                osc.connect(g);
-                g.connect(master);
-                osc.start(now);
-                osc.stop(now + duration + 0.4);
-            });
+            carrier.start(now); carrier.stop(now + duration + 0.7);
+            mod.start(now); mod.stop(now + duration + 0.7);
+            tine.start(now); tine.stop(now + 0.15);
         }
 
         function playNote(frequency, duration = 0.5, type = 'sine') {
