@@ -1017,6 +1017,59 @@
                 overflow-y: visible;
             }
         }
+        /* ==================== TEORIA: boton i y sheet ==================== */
+        .level-card { position: relative; }
+        .info-btn {
+            position: absolute; top: 8px; right: 8px;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: white; border: 2px solid #e9ecef;
+            color: #667eea;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-style: italic; font-weight: 700; font-size: 15px;
+            line-height: 1; cursor: pointer; z-index: 3; padding: 0;
+        }
+        .info-btn:active { background: #f3f4f6; }
+        .info-inline { position: static; vertical-align: middle; margin-left: 8px; flex-shrink: 0; }
+        .theory-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45);
+            display: none; align-items: flex-end; justify-content: center; z-index: 100;
+        }
+        .theory-overlay.active { display: flex; }
+        .theory-sheet {
+            background: white; border-radius: 20px 20px 0 0;
+            width: 100%; max-width: 900px; max-height: 85vh;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
+            animation: theorySlideUp 0.25s ease-out;
+        }
+        @keyframes theorySlideUp {
+            from { transform: translateY(40px); opacity: 0.6; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .theory-handle { width: 40px; height: 4px; border-radius: 2px; background: #e5e7eb; margin: 0 auto 10px; }
+        .theory-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .theory-head h3 { font-size: 19px; color: #333; }
+        .theory-close {
+            width: 30px; height: 30px; border-radius: 50%; border: none;
+            background: #f3f4f6; color: #666; font-size: 14px; font-weight: 700;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .theory-section-title {
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+            color: #667eea; text-transform: uppercase; margin: 16px 0 6px;
+        }
+        .theory-text { font-size: 14px; color: #333; line-height: 1.55; }
+        .theory-box {
+            background: #f3f4f6; border-radius: 10px; padding: 12px 14px;
+            margin-top: 10px; font-size: 13px; color: #333; line-height: 1.6;
+        }
+        .theory-box .tip-title { font-weight: 700; }
+        .theory-gotit {
+            display: block; width: 100%; margin-top: 20px; padding: 13px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -1034,8 +1087,9 @@
                     <button class="settings-pill" id="langEsBtn">🇪🇸 ES</button>
                 </div>
                 <div class="settings-group">
-                    <button class="settings-pill" id="notLettersBtn">C D E</button>
-                    <button class="settings-pill" id="notSolfegeBtn">Do Re Mi</button>
+                    <button class="settings-pill" id="notaDoBtn">Do</button>
+                    <button class="settings-pill" id="notaClassicBtn">Cmaj7</button>
+                    <button class="settings-pill" id="notaJazzBtn">C△7</button>
                 </div>
             </div>
             <div class="start-screen">
@@ -1049,6 +1103,7 @@
             <div class="quiz-screen">
                 <div class="quiz-header">
                     <h2 id="levelTitle"></h2>
+                    <button class="info-btn info-inline" id="quizInfoBtn">i</button>
                     <div class="quiz-stats">
                         <div class="stat"><span id="questionLabel">Question:</span> <strong id="questionNumber"></strong></div>
                         <div class="stat"><span id="correctLabel">Correct:</span> <strong id="correctCount"></strong></div>
@@ -1204,6 +1259,7 @@
             <div class="quiz-screen">
                 <div class="quiz-header">
                     <h2 id="slTitle"></h2>
+                    <button class="info-btn info-inline" id="slInfoBtn">i</button>
                     <div class="quiz-stats">
                         <div class="stat"><span id="slQuestionLabel">Question:</span> <strong id="slQuestionNumber"></strong></div>
                         <div class="stat"><span id="slCorrectLabel">Correct:</span> <strong id="slCorrectCount"></strong></div>
@@ -1285,6 +1341,7 @@
             <div class="quiz-screen">
                 <div class="quiz-header">
                     <h2 id="progQuizTitle"></h2>
+                    <button class="info-btn info-inline" id="progInfoBtn">i</button>
                     <div class="quiz-stats">
                         <div class="stat"><span id="progQuestionLabel">Question:</span> <strong id="progQuestionNumber"></strong></div>
                         <div class="stat"><span id="progCorrectLabel">Correct:</span> <strong id="progCorrectCount"></strong></div>
@@ -1323,6 +1380,27 @@
                     <button class="btn-primary" id="progNextBtn" disabled>Next</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Sheet de teoria (capa sobre todo) -->
+    <div class="theory-overlay" id="theoryOverlay">
+        <div class="theory-sheet" id="theorySheet">
+            <div class="theory-handle"></div>
+            <div class="theory-head">
+                <h3 id="theoryTitle"></h3>
+                <button class="theory-close" id="theoryCloseBtn">✕</button>
+            </div>
+            <div class="theory-section-title" id="theoryWhyTitle"></div>
+            <div class="theory-text" id="theoryWhyText"></div>
+            <div class="theory-section-title" id="theoryBriefTitle"></div>
+            <div class="theory-text" id="theoryBriefText"></div>
+            <div class="theory-section-title" id="theoryQuizTitle"></div>
+            <div class="theory-text" id="theoryQuizText"></div>
+            <div class="theory-box" id="theoryTipBox">
+                <span class="tip-title">💡 </span><span id="theoryTipText"></span>
+            </div>
+            <button class="theory-gotit" id="theoryGotItBtn"></button>
         </div>
     </div>
 
@@ -1920,6 +1998,59 @@
                 q_key_and_mode: 'What key and mode?',
                 mode_word_major: 'major',
                 mode_word_minor: 'minor',
+                // ==================== THEORY (Level info sheets) ====================
+                th_why_title: 'Why it matters',
+                th_brief_title: 'Theory in brief',
+                th_quiz_title: 'How the quiz works',
+                th_gotit: 'Got it!',
+                th1_why: 'Every scale note has a job and a name. Knowing the degrees (tonic, dominant...) lets you talk about music in any key: "the 5th degree" means the same thing in C or in E♭.',
+                th1_brief: 'The 7 degrees of a scale are: <strong>1 Tonic</strong> (home), <strong>2 Supertonic</strong>, <strong>3 Mediant</strong>, <strong>4 Subdominant</strong>, <strong>5 Dominant</strong> (maximum tension toward home), <strong>6 Submediant</strong>, <strong>7 Leading Tone</strong> (pulls to the tonic). In minor scales the notes change, but the positions keep their names.',
+                th1_quiz: 'You are asked for a degree of a key (e.g. "the 3rd degree of F major") and you pick the right note. Exercises follow the circle of fifths; from exercise 13 the key is random.',
+                th1_tip: 'Sing the scale from the tonic and count steps: the answer is always inside the scale.',
+                th2_why: 'Chords are not isolated: each degree generates a chord with a quality (major, minor, diminished) that defines its harmonic function. This is the grammar behind every progression.',
+                th2_brief: 'Harmonizing the major scale gives: <strong>I</strong> ii iii <strong>IV V</strong> vi vii°. Natural minor gives: i ii° III iv v VI VII. Harmonic minor raises the 7th, creating <strong>V major</strong> (a real dominant) and <strong>III+</strong> (augmented).',
+                th2_quiz: 'You hear or see a chord within a key and identify which degree/function it is. The tonic chord is played as reference.',
+                th2_tip: 'Memorize the major-key pattern: Major-minor-minor-Major-Major-minor-diminished.',
+                th3_why: 'Modes are the colors of the scale: same notes, different center. They are everywhere from Miles Davis to film scores. Recognizing them by ear expands what you can improvise and compose.',
+                th3_brief: 'Each mode starts the major scale from a different degree: <strong>Ionian</strong> (major), <strong>Dorian</strong> (minor with bright 6), <strong>Phrygian</strong> (♭2, Spanish sound), <strong>Lydian</strong> (♯4, dreamy), <strong>Mixolydian</strong> (♭7, dominant/rock), <strong>Aeolian</strong> (natural minor), <strong>Locrian</strong> (♭2 ♭5, unstable).',
+                th3_quiz: 'A scale is played and you name the mode. Listen for the characteristic note: the ♯4 of Lydian, the ♭2 of Phrygian, the ♭7 of Mixolydian.',
+                th3_tip: 'Compare everything to major or natural minor: ask yourself "which note is different?".',
+                th4_why: 'Before naming chords you must hear their quality. Major/minor/diminished/augmented are the four basic sonorities all harmony is built from.',
+                th4_brief: '<strong>Major</strong> = happy/stable (1-3-5). <strong>Minor</strong> = dark (♭3). <strong>Diminished</strong> = tense, wants to resolve (♭3 ♭5). <strong>Augmented</strong> = floating, unresolved (3 ♯5). The 3rd defines major vs minor; the 5th defines dim vs aug.',
+                th4_quiz: 'You hear an arpeggio followed by the block chord and choose the quality. From exercise 10 all four types appear.',
+                th4_tip: 'Focus on the 3rd first (major or minor?), then check if the 5th sounds strange.',
+                th5_why: 'Building scales note by note fixes their formulas in your fingers and your eyes. It is the fastest way to truly own a scale instead of just recognizing it.',
+                th5_brief: 'Each scale is a formula of whole and half steps. Major: W-W-H-W-W-W-H. Natural minor: W-H-W-W-H-W-W. Pentatonics remove 2 notes; blues scales add the "blue note" (♭5 in minor blues, ♭3 in major blues). Harmonic major and double harmonic introduce exotic augmented 2nd leaps.',
+                th5_quiz: 'You are given a root and a scale type, and you tap the piano keys in order. Spelling is validated by sound: the black key C♯/D♭ counts for both names.',
+                th5_tip: 'Think in intervals from the previous note, not in absolute names.',
+                th6_why: 'Almost every song you know is built on a handful of progressions. Learning to build them in any key is learning the skeleton of real music.',
+                th6_brief: 'Progressions are written in Roman numerals so they work in every key: <strong>I-IV-V</strong> (the classic), <strong>I-V-vi-IV</strong> (the pop progression), <strong>ii-V-I</strong> (jazz), turn arounds like <strong>I-vi-ii-V</strong>, and 12-bar blues. Minor progressions use i, iv, V (borrowed major dominant), VI and VII.',
+                th6_quiz: 'You are shown a formula and a key, and you build it by tapping chords in order. You can play back what you built before checking. 6 categories, from cadences to long progressions.',
+                th6_tip: 'Locate the I first; every other chord is measured from it.',
+                th7_why: 'The interval is the smallest unit of music: every melody, chord and scale is a combination of intervals. Recognizing them by ear is the foundation of ear training.',
+                th7_brief: 'An interval is the distance between two notes in semitones: 1 = <strong>minor 2nd</strong> (Jaws), 4 = <strong>Major 3rd</strong> (start of a major chord), 7 = <strong>Perfect 5th</strong> (Star Wars), 6 = <strong>Tritone</strong> (maximum tension), 12 = <strong>Octave</strong> (Somewhere Over the Rainbow). Intervals can be melodic (one note after the other) or harmonic (both together).',
+                th7_quiz: 'Two notes are played and you name the interval. Exercises 1-7 ascending, 8-13 descending, 14-20 harmonic. The challenge mixes all three.',
+                th7_tip: 'Anchor each interval to a song you know well.',
+                th8_why: 'Seventh chords are the vocabulary of jazz, soul, bossa and gospel. Telling maj7 from dominant 7 by ear unlocks real-world harmony.',
+                th8_brief: '<strong>Maj7</strong> (1-3-5-7): dreamy, soft. <strong>m7</strong> (1-♭3-5-♭7): mellow minor. <strong>Dominant 7</strong> (1-3-5-♭7): bluesy tension, wants to resolve. <strong>m7♭5</strong>: dark, the "ii" of minor keys. <strong>dim7</strong>: symmetric maximum tension, every note a minor 3rd apart.',
+                th8_quiz: 'Arpeggio + block chord, and you pick the type. Exercises 1-9 use maj7, m7 and dom7; from 10 the five types appear.',
+                th8_tip: 'First decide major or minor 3rd, then listen to how the 7th colors it.',
+                th9_why: 'Extensions (9, 11, 13) are what make chords sound rich and modern. They are the difference between a plain triad and the sound of Stevie Wonder.',
+                th9_brief: 'Extensions stack 3rds beyond the 7th: <strong>9</strong> adds sweetness, <strong>11</strong> (usually over sus) adds suspension, <strong>13</strong> adds warmth over dominants. Altered tensions (♭9, ♯9, ♯11, ♭13) add controlled dissonance: the ♯9 is the "Hendrix chord", the ♯11 is the Lydian color.',
+                th9_quiz: 'A chord with one extension is played and you identify it. Exercises 1-9: natural extensions only; from 10, altered ones too.',
+                th9_tip: 'Listen to the top of the chord: the extension usually sings above everything.',
+                th10_why: 'The melodic minor modes are the secret weapon of modern improvisation: Lydian Dominant and Altered are the default sounds over jazz dominants.',
+                th10_brief: 'Take melodic minor (minor with major 6 and 7) and start from each degree: <strong>Melodic Minor</strong>, <strong>Dorian ♭2</strong>, <strong>Lydian Augmented</strong> (♯4 ♯5), <strong>Lydian Dominant</strong> (♯4 ♭7, the "overtone" sound), <strong>Mixolydian ♭6</strong>, <strong>Half-Diminished</strong> (for m7♭5 chords), <strong>Altered</strong> (every tension flat/sharp, for altered dominants).',
+                th10_quiz: 'A scale is played and you name the mode among 4 options. Same format as Greek Modes but with the melodic minor family.',
+                th10_tip: 'Altered is the only one where nothing sounds "at rest" - if everything floats, it is Altered.',
+                th11_why: 'The ii-V-I is the DNA of jazz and much of pop. Hearing what key a cadence lands in is the core skill of tonal ear training.',
+                th11_brief: 'In major: <strong>iim7 - V7 - Imaj7</strong> (Dm7-G7-Cmaj7 in C). In minor: <strong>iim7♭5 - V7 - i</strong>. The V7 contains the tritone that resolves to the tonic chord; your ear "lands" on the I. After the cadence, the tonic note is played alone to confirm.',
+                th11_quiz: 'A full cadence is played and you name the key. Exercises 1-7 major only; 8-13 add minor; from 14 you also identify the mode.',
+                th11_tip: 'Sing the last note you feel as "home" - that is the tonic.',
+                th12_why: 'Modal interchange (borrowing chords from the parallel mode) is the most used reharmonization tool in pop and film music. That "beautiful sad chord" in a happy song is usually borrowed.',
+                th12_brief: 'In a major key you can borrow from the parallel minor: <strong>iv</strong> (minor subdominant, Radiohead\'s "Creep"), <strong>♭VII</strong> (Mixolydian rock sound, "Hey Jude" coda), <strong>♭VI</strong> (epic Beatles color). The borrowed chord contains a note foreign to the key - that is what you hear as "different".',
+                th12_quiz: 'A 4-chord progression with exactly one borrowed chord is played. Exercises 1-9: find its position; from 10: name which borrowed chord it is.',
+                th12_tip: 'The borrowed chord is the one that sounds suddenly darker (iv, ♭VI) or brighter-bluesy (♭VII).',
                 // Preguntas y respuestas Level 12
                 q_borrowed_position: 'Which chord is borrowed?',
                 q_borrowed_type: 'Which chord is borrowed?',
@@ -2126,6 +2257,58 @@
                 q_key_and_mode: '¿Qué tonalidad y modo?',
                 mode_word_major: 'mayor',
                 mode_word_minor: 'menor',
+                th_why_title: 'Por qu\u00e9 importa',
+                th_brief_title: 'La teor\u00eda en breve',
+                th_quiz_title: 'C\u00f3mo funciona el quiz',
+                th_gotit: '\u00a1Entendido!',
+                th1_why: 'Cada nota de la escala tiene un rol y un nombre. Conocer los grados (t\u00f3nica, dominante...) te permite hablar de m\u00fasica en cualquier tonalidad: "el 5to grado" significa lo mismo en C que en E♭.',
+                th1_brief: 'Los 7 grados de una escala son: <strong>1 T\u00f3nica</strong> (el reposo), <strong>2 Supert\u00f3nica</strong>, <strong>3 Mediante</strong>, <strong>4 Subdominante</strong>, <strong>5 Dominante</strong> (m\u00e1xima tensi\u00f3n hacia casa), <strong>6 Submediante</strong>, <strong>7 Sensible</strong> (tira hacia la t\u00f3nica). En las menores cambian las notas, pero las posiciones conservan su nombre.',
+                th1_quiz: 'Te pide un grado de una tonalidad (ej. "el 3er grado de F mayor") y eleg\u00eds la nota correcta. Los ejercicios recorren el c\u00edrculo de quintas; desde el 13 la tonalidad es aleatoria.',
+                th1_tip: 'Cant\u00e1 la escala desde la t\u00f3nica y cont\u00e1 pasos: la respuesta siempre est\u00e1 dentro de la escala.',
+                th2_why: 'Los acordes no est\u00e1n aislados: cada grado genera un acorde con una cualidad (mayor, menor, disminuido) que define su funci\u00f3n arm\u00f3nica. Es la gram\u00e1tica detr\u00e1s de toda progresi\u00f3n.',
+                th2_brief: 'Armonizar la escala mayor da: <strong>I</strong> ii iii <strong>IV V</strong> vi vii°. La menor natural da: i ii° III iv v VI VII. La menor arm\u00f3nica sube la 7ma y crea el <strong>V mayor</strong> (dominante real) y el <strong>III+</strong> (aumentado).',
+                th2_quiz: 'Escuch\u00e1s o ves un acorde dentro de una tonalidad e identific\u00e1s qu\u00e9 grado/funci\u00f3n es. El acorde de t\u00f3nica suena como referencia.',
+                th2_tip: 'Memoriz\u00e1 el patr\u00f3n de mayor: Mayor-menor-menor-Mayor-Mayor-menor-disminuido.',
+                th3_why: 'Los modos son los colores de la escala: mismas notas, distinto centro. Est\u00e1n en todo, de Miles Davis a las bandas sonoras. Reconocerlos de o\u00eddo expande lo que pod\u00e9s improvisar y componer.',
+                th3_brief: 'Cada modo arranca la escala mayor desde un grado distinto: <strong>J\u00f3nico</strong> (mayor), <strong>D\u00f3rico</strong> (menor con 6 brillante), <strong>Frigio</strong> (♭2, sonido espa\u00f1ol), <strong>Lidio</strong> (♯4, so\u00f1ador), <strong>Mixolidio</strong> (♭7, dominante/rock), <strong>E\u00f3lico</strong> (menor natural), <strong>Locrio</strong> (♭2 ♭5, inestable).',
+                th3_quiz: 'Suena una escala y nombr\u00e1s el modo. Escuch\u00e1 la nota caracter\u00edstica: el ♯4 del Lidio, el ♭2 del Frigio, el ♭7 del Mixolidio.',
+                th3_tip: 'Compar\u00e1 todo contra mayor o menor natural: pregunt\u00e1te "\u00bfqu\u00e9 nota es distinta?".',
+                th4_why: 'Antes de nombrar acordes ten\u00e9s que o\u00edr su cualidad. Mayor/menor/disminuido/aumentado son las cuatro sonoridades b\u00e1sicas con las que se construye toda la armon\u00eda.',
+                th4_brief: '<strong>Mayor</strong> = alegre/estable (1-3-5). <strong>Menor</strong> = oscuro (♭3). <strong>Disminuido</strong> = tenso, quiere resolver (♭3 ♭5). <strong>Aumentado</strong> = flotante, sin resolver (3 ♯5). La 3ra define mayor vs menor; la 5ta define dim vs aug.',
+                th4_quiz: 'Escuch\u00e1s un arpegio seguido del acorde bloqueado y eleg\u00eds la cualidad. Desde el ejercicio 10 aparecen los cuatro tipos.',
+                th4_tip: 'Enfocate primero en la 3ra (\u00bfmayor o menor?), despu\u00e9s fijate si la 5ta suena rara.',
+                th5_why: 'Construir escalas nota por nota fija sus f\u00f3rmulas en tus dedos y tus ojos. Es la forma m\u00e1s r\u00e1pida de apropiarte de una escala en vez de solo reconocerla.',
+                th5_brief: 'Cada escala es una f\u00f3rmula de tonos y semitonos. Mayor: T-T-S-T-T-T-S. Menor natural: T-S-T-T-S-T-T. Las pentat\u00f3nicas quitan 2 notas; las blues agregan la "blue note" (♭5 en blues menor, ♭3 en blues mayor). La mayor arm\u00f3nica y la doble arm\u00f3nica introducen saltos ex\u00f3ticos de 2da aumentada.',
+                th5_quiz: 'Te da una t\u00f3nica y un tipo de escala, y toc\u00e1s las teclas del piano en orden. La validaci\u00f3n es por sonido: la tecla C♯/D♭ vale para ambos nombres.',
+                th5_tip: 'Pens\u00e1 en intervalos desde la nota anterior, no en nombres absolutos.',
+                th6_why: 'Casi toda canci\u00f3n que conoc\u00e9s se construye sobre un pu\u00f1ado de progresiones. Aprender a armarlas en cualquier tonalidad es aprender el esqueleto de la m\u00fasica real.',
+                th6_brief: 'Las progresiones se escriben en n\u00fameros romanos para que sirvan en toda tonalidad: <strong>I-IV-V</strong> (la cl\u00e1sica), <strong>I-V-vi-IV</strong> (la progresi\u00f3n pop), <strong>ii-V-I</strong> (jazz), turn arounds como <strong>I-vi-ii-V</strong>, y el blues de 12 compases. Las menores usan i, iv, V (dominante mayor prestado), VI y VII.',
+                th6_quiz: 'Te muestra una f\u00f3rmula y una tonalidad, y la constru\u00eds tocando acordes en orden. Pod\u00e9s reproducir lo que armaste antes de verificar. 6 categor\u00edas, de cadencias a progresiones largas.',
+                th6_tip: 'Ubic\u00e1 primero el I; todos los dem\u00e1s acordes se miden desde ah\u00ed.',
+                th7_why: 'El intervalo es la unidad m\u00ednima de la m\u00fasica: toda melod\u00eda, acorde y escala es una combinaci\u00f3n de intervalos. Reconocerlos de o\u00eddo es la base del entrenamiento auditivo.',
+                th7_brief: 'Un intervalo es la distancia entre dos notas en semitonos: 1 = <strong>2da menor</strong> (Tibur\u00f3n), 4 = <strong>3ra Mayor</strong> (inicio de acorde mayor), 7 = <strong>5ta Justa</strong> (Star Wars), 6 = <strong>Tritono</strong> (m\u00e1xima tensi\u00f3n), 12 = <strong>Octava</strong> (Over the Rainbow). Pueden sonar mel\u00f3dicos (una nota despu\u00e9s de la otra) o arm\u00f3nicos (juntas).',
+                th7_quiz: 'Suenan dos notas y nombr\u00e1s el intervalo. Ejercicios 1-7 ascendentes, 8-13 descendentes, 14-20 arm\u00f3nicos. El challenge mezcla los tres.',
+                th7_tip: 'Ancl\u00e1 cada intervalo a una canci\u00f3n que conozcas bien.',
+                th8_why: 'Los acordes de s\u00e9ptima son el vocabulario del jazz, el soul, la bossa y el gospel. Distinguir maj7 de dominante 7 de o\u00eddo te abre la armon\u00eda del mundo real.',
+                th8_brief: '<strong>Maj7</strong> (1-3-5-7): so\u00f1ador, suave. <strong>m7</strong> (1-♭3-5-♭7): menor c\u00e1lido. <strong>Dominante 7</strong> (1-3-5-♭7): tensi\u00f3n bluesera, quiere resolver. <strong>m7♭5</strong>: oscuro, el "ii" de las tonalidades menores. <strong>dim7</strong>: tensi\u00f3n m\u00e1xima sim\u00e9trica, todas las notas a 3ra menor.',
+                th8_quiz: 'Arpegio + acorde bloqueado, y eleg\u00eds el tipo. Ejercicios 1-9 usan maj7, m7 y dom7; desde el 10 aparecen los cinco tipos.',
+                th8_tip: 'Primero decid\u00ed si la 3ra es mayor o menor, despu\u00e9s escuch\u00e1 c\u00f3mo la colorea la 7ma.',
+                th9_why: 'Las extensiones (9, 11, 13) son lo que hace sonar rico y moderno a un acorde. Son la diferencia entre una triada pelada y el sonido de Stevie Wonder.',
+                th9_brief: 'Las extensiones apilan 3ras m\u00e1s all\u00e1 de la 7ma: la <strong>9</strong> agrega dulzura, la <strong>11</strong> (usualmente sobre sus) agrega suspensi\u00f3n, la <strong>13</strong> agrega calidez sobre dominantes. Las alteradas (♭9, ♯9, ♯11, ♭13) agregan disonancia controlada: el ♯9 es el "acorde Hendrix", el ♯11 es el color lidio.',
+                th9_quiz: 'Suena un acorde con una extensi\u00f3n y la identific\u00e1s. Ejercicios 1-9: solo naturales; desde el 10, tambi\u00e9n las alteradas.',
+                th9_tip: 'Escuch\u00e1 la parte alta del acorde: la extensi\u00f3n suele cantar por encima de todo.',
+                th10_why: 'Los modos de la menor mel\u00f3dica son el arma secreta de la improvisaci\u00f3n moderna: Lidio Dominante y Alterada son los sonidos por defecto sobre dominantes de jazz.',
+                th10_brief: 'Tom\u00e1 la menor mel\u00f3dica (menor con 6 y 7 mayores) y arrancala desde cada grado: <strong>Menor Mel\u00f3dica</strong>, <strong>D\u00f3rico ♭2</strong>, <strong>Lidio Aumentado</strong> (♯4 ♯5), <strong>Lidio Dominante</strong> (♯4 ♭7), <strong>Mixolidio ♭6</strong>, <strong>Semi-disminuido</strong> (para acordes m7♭5), <strong>Alterada</strong> (todas las tensiones alteradas, para dominantes alterados).',
+                th10_quiz: 'Suena una escala y nombr\u00e1s el modo entre 4 opciones. Mismo formato que Modos Griegos pero con la familia de la mel\u00f3dica menor.',
+                th10_tip: 'La Alterada es la \u00fanica donde nada suena "en reposo": si todo flota, es Alterada.',
+                th11_why: 'El ii-V-I es el ADN del jazz y de buena parte del pop. O\u00edr en qu\u00e9 tonalidad aterriza una cadencia es LA habilidad central del o\u00eddo tonal.',
+                th11_brief: 'En mayor: <strong>iim7 - V7 - Imaj7</strong> (Dm7-G7-Cmaj7 en C). En menor: <strong>iim7♭5 - V7 - i</strong>. El V7 contiene el tritono que resuelve al acorde de t\u00f3nica; tu o\u00eddo "aterriza" en el I. Al final suena la t\u00f3nica sola para confirmar el reposo.',
+                th11_quiz: 'Suena la cadencia completa y nombr\u00e1s la tonalidad. Ejercicios 1-7 solo mayor; 8-13 suma menor; desde el 14 tambi\u00e9n identific\u00e1s el modo.',
+                th11_tip: 'Cant\u00e1 la nota que sent\u00eds como "casa": esa es la t\u00f3nica.',
+                th12_why: 'El intercambio modal (prestar acordes del modo paralelo) es la herramienta de rearmonizaci\u00f3n m\u00e1s usada en pop y m\u00fasica de cine. Ese "acorde triste hermoso" en una canci\u00f3n alegre suele ser prestado.',
+                th12_brief: 'En una tonalidad mayor pod\u00e9s prestar de la menor paralela: el <strong>iv</strong> (subdominante menor, "Creep" de Radiohead), el <strong>♭VII</strong> (sonido mixolidio rockero, coda de "Hey Jude"), el <strong>♭VI</strong> (color \u00e9pico Beatle). El acorde prestado contiene una nota ajena a la tonalidad: eso es lo que o\u00eds como "distinto".',
+                th12_quiz: 'Suena una progresi\u00f3n de 4 acordes con exactamente uno prestado. Ejercicios 1-9: encontr\u00e1 su posici\u00f3n; desde el 10: nombr\u00e1 cu\u00e1l pr\u00e9stamo es.',
+                th12_tip: 'El prestado es el que de golpe suena m\u00e1s oscuro (iv, ♭VI) o m\u00e1s brillante-bluesero (♭VII).',
                 q_borrowed_position: '¿Qué acorde es el prestado?',
                 q_borrowed_type: '¿Qué acorde es el prestado?',
                 borrow_pos_1: '1er acorde',
@@ -2261,6 +2444,19 @@
             'C': 'Do', 'D': 'Re', 'E': 'Mi', 'F': 'Fa', 'G': 'Sol', 'A': 'La', 'B': 'Si'
         };
 
+        // Convierte alteraciones ASCII a simbolos musicales reales SOLO para mostrar.
+        // Interno sigue siendo 'Bb'/'F#' (progreso, comparaciones y audio no cambian).
+        function prettyAccidentals(s) {
+            if (!s) return s;
+            let out = String(s).replace(/#/g, '♯');
+            for (let i = 0; i < 2; i++) {
+                out = out.replace(/([A-G♭])b/g, '$1♭');
+            }
+            out = out.replace(/(Do|Re|Mi|Fa|Sol|La|Si)b/g, '$1♭');
+            out = out.replace(/b(?=(\d|VII|VI|V|IV|III|II|I))/g, '♭');
+            return out;
+        }
+
         // ==================== APP STATE ====================
         const app = {
             language: 'en',      // 'en' | 'es' (estandar: ingles)
@@ -2273,20 +2469,28 @@
             },
 
             noteDisp(note) {
+                let out = note;
                 if (this.notation === 'solfege' && SOLFEGE_LETTER[note[0]]) {
-                    return SOLFEGE_LETTER[note[0]] + note.slice(1);
+                    out = SOLFEGE_LETTER[note[0]] + note.slice(1);
                 }
-                return note;
+                return prettyAccidentals(out);
             },
 
             chordDisp(chordName) {
-                let root = chordName[0];
-                let suffix = chordName.slice(1);
-                if (chordName[1] === '#') {
-                    root = chordName.substring(0, 2);
-                    suffix = chordName.slice(2);
+                // Separar raiz (con sus alteraciones) de la cualidad
+                const m = String(chordName).match(/^([A-G][#b]*)(.*)$/);
+                if (!m) return prettyAccidentals(chordName);
+                const root = m[1];
+                let qual = m[2];
+                // Estilo jazz: m -> -, dim -> grado, maj7 -> triangulo7
+                if (this.chordStyle === 'jazz') {
+                    if (qual === 'm') qual = '-';
+                    else if (qual === 'dim') qual = '°';
+                    else if (qual === 'maj7') qual = '△7';
+                    else if (qual === 'm7') qual = '-7';
+                    else if (qual === 'm7b5') qual = '-7b5';
                 }
-                return this.noteDisp(root) + suffix;
+                return prettyAccidentals(this.noteDisp(root) + qual);
             },
 
             tonaName(scaleMode) {
@@ -2324,16 +2528,40 @@
                         return this.t('borrow_pos_' + option);
                     }
                     // Si pide tipo: 'iv','bVII','bVI' → "iv (menor)" etc.
-                    return this.t('borrow_type_' + option);
+                    return prettyAccidentals(this.t('borrow_type_' + option));
                 }
                 return option;
             },
 
+            chordStyle: 'classic',
+
             loadPrefs() {
                 const lang = localStorage.getItem('music_quiz_language');
                 const nota = localStorage.getItem('music_quiz_notation');
+                const cs = localStorage.getItem('music_quiz_chordstyle');
                 if (lang === 'en' || lang === 'es') this.language = lang;
                 if (nota === 'letters' || nota === 'solfege') this.notation = nota;
+                if (cs === 'classic' || cs === 'jazz') this.chordStyle = cs;
+                // El selector unificado no ofrece solfeo+jazz: Do implica clasica
+                if (this.notation === 'solfege') this.chordStyle = 'classic';
+            },
+
+            setChordStyle(cs) {
+                this.chordStyle = cs;
+                localStorage.setItem('music_quiz_chordstyle', cs);
+                this.applyStaticTranslations();
+                this.renderStartScreen();
+            },
+
+            // Selector unificado de notacion: 'Do' (solfeo), 'Cmaj7' (americana
+            // clasica) o 'C(triangulo)7' (americana jazz). Setea ambos estados juntos.
+            setNotationCombo(nota, cs) {
+                this.notation = nota;
+                this.chordStyle = cs;
+                localStorage.setItem('music_quiz_notation', nota);
+                localStorage.setItem('music_quiz_chordstyle', cs);
+                this.applyStaticTranslations();
+                this.renderStartScreen();
             },
 
             setLanguage(lang) {
@@ -2354,8 +2582,9 @@
                 const map = [
                     ['langEnBtn', this.language === 'en'],
                     ['langEsBtn', this.language === 'es'],
-                    ['notLettersBtn', this.notation === 'letters'],
-                    ['notSolfegeBtn', this.notation === 'solfege']
+                    ['notaDoBtn', this.notation === 'solfege'],
+                    ['notaClassicBtn', this.notation === 'letters' && this.chordStyle === 'classic'],
+                    ['notaJazzBtn', this.notation === 'letters' && this.chordStyle === 'jazz']
                 ];
                 map.forEach(([id, active]) => {
                     const el = document.getElementById(id);
@@ -2540,12 +2769,19 @@
             async init() {
                 this.loadPrefs();
                 this.applyStaticTranslations();
+                this.bindTheorySheet();
+                document.getElementById('quizInfoBtn').onclick = () => {
+                    if (this.currentLevel) this.openTheory(this.currentLevel.id);
+                };
+                document.getElementById('slInfoBtn').onclick = () => this.openTheory(5);
+                document.getElementById('progInfoBtn').onclick = () => this.openTheory(6);
 
                 // Barra de idioma / notacion (solo en pantalla de inicio)
                 document.getElementById('langEnBtn').onclick = () => this.setLanguage('en');
                 document.getElementById('langEsBtn').onclick = () => this.setLanguage('es');
-                document.getElementById('notLettersBtn').onclick = () => this.setNotation('letters');
-                document.getElementById('notSolfegeBtn').onclick = () => this.setNotation('solfege');
+                document.getElementById('notaDoBtn').onclick = () => this.setNotationCombo('solfege', 'classic');
+                document.getElementById('notaClassicBtn').onclick = () => this.setNotationCombo('letters', 'classic');
+                document.getElementById('notaJazzBtn').onclick = () => this.setNotationCombo('letters', 'jazz');
 
                 await this.loadProgress();
                 this.renderStartScreen();
@@ -2669,6 +2905,7 @@
                     return `
                         <div class="level-card ${locked ? 'locked' : ''}" data-level-id="${level.id}">
                             ${locked ? '<div class="lock-icon">🔒</div>' : ''}
+                            <button class="info-btn" data-info-id="${level.id}">i</button>
                             <h3>${this.getLevelName(level.id)}</h3>
                             <p>${this.getLevelDesc(level.id)}</p>
                             ${progressHtml}
@@ -2685,6 +2922,14 @@
                 // Agregar event listeners después de un pequeño delay
                 setTimeout(() => {
                     // Botón Play: entra al nivel (la tarjeta ya no es clickeable)
+                    document.querySelectorAll('.info-btn[data-info-id]').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            app.openTheory(parseInt(btn.dataset.infoId));
+                        });
+                    });
+
                     document.querySelectorAll('.level-play-btn').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             e.preventDefault();
@@ -3697,11 +3942,11 @@
                     const qScaleMode = q.scaleMode || this.currentScaleMode;
                     const tonicChord = qScaleMode === 'major' ? q.keyNote : q.keyNote + 'm';
                     audioControls.innerHTML = `
-                        <button class="play-btn" id="playChordBtn" ${this.answered ? 'disabled' : ''}>
-                            🔊 ${this.chordDisp(q.chord)}
-                        </button>
                         <button class="play-btn" id="playKeyBtn" ${this.answered ? 'disabled' : ''}>
                             🔊 ${this.noteDisp(q.keyNote)}
+                        </button>
+                        <button class="play-btn" id="playChordBtn" ${this.answered ? 'disabled' : ''}>
+                            🔊 ${this.chordDisp(q.chord)}
                         </button>
                     `;
                     
@@ -3717,19 +3962,19 @@
                         playChordSound(tonicChord);
                     });
 
-                    // Auto-play chord and key on load - esperar 1 segundo antes de empezar
-                    // Guard: solo reproducir si seguimos en la misma pregunta
+                    // Auto-play al cargar: PRIMERO la tonica (referencia del oido),
+                    // DESPUES el acorde del quiz. Guard: solo si seguimos en la misma pregunta
                     const questionAtRender = this.currentQuestion;
                     setTimeout(() => {
                         if (this.currentQuestion !== questionAtRender ||
                             !document.getElementById('quizScreen').classList.contains('active')) return;
                         if (this.audioIsBusy()) return;
                         this.lockAudioButtons(3100);
-                        playChordSound(q.chord);
+                        playChordSound(tonicChord);
                         setTimeout(() => {
                             if (this.currentQuestion !== questionAtRender ||
                                 !document.getElementById('quizScreen').classList.contains('active')) return;
-                            playChordSound(tonicChord);
+                            playChordSound(q.chord);
                         }, 1200);
                     }, 1000);
                 } else {
@@ -4894,6 +5139,40 @@
                 };
                 document.getElementById('backMenuBtn').addEventListener('click', this._backMenuListener);
                 document.getElementById('retryBtn').addEventListener('click', this._retryListener);
+            },
+
+            // ==================== TEORIA ====================
+            openTheory(levelId) {
+                document.getElementById('theoryTitle').textContent = '\ud83d\udcd6 ' + this.getLevelName(levelId);
+                document.getElementById('theoryWhyTitle').textContent = this.t('th_why_title');
+                document.getElementById('theoryBriefTitle').textContent = this.t('th_brief_title');
+                document.getElementById('theoryQuizTitle').textContent = this.t('th_quiz_title');
+                document.getElementById('theoryWhyText').innerHTML = this.t('th' + levelId + '_why');
+                document.getElementById('theoryBriefText').innerHTML = this.t('th' + levelId + '_brief');
+                document.getElementById('theoryQuizText').innerHTML = this.t('th' + levelId + '_quiz');
+                const tip = this.t('th' + levelId + '_tip');
+                const tipBox = document.getElementById('theoryTipBox');
+                if (tip && tip !== 'th' + levelId + '_tip') {
+                    tipBox.style.display = 'block';
+                    document.getElementById('theoryTipText').innerHTML = tip;
+                } else {
+                    tipBox.style.display = 'none';
+                }
+                document.getElementById('theoryGotItBtn').textContent = this.t('th_gotit');
+                document.getElementById('theoryOverlay').classList.add('active');
+                document.getElementById('theorySheet').scrollTop = 0;
+            },
+
+            closeTheory() {
+                document.getElementById('theoryOverlay').classList.remove('active');
+            },
+
+            bindTheorySheet() {
+                document.getElementById('theoryCloseBtn').onclick = () => this.closeTheory();
+                document.getElementById('theoryGotItBtn').onclick = () => this.closeTheory();
+                document.getElementById('theoryOverlay').onclick = (e) => {
+                    if (e.target === document.getElementById('theoryOverlay')) this.closeTheory();
+                };
             },
 
             goBack() {
