@@ -1711,6 +1711,30 @@
             { id: 'bVI_pos3',  molds: ['I','IV','bVI','V'],  borrowType: 'bVI',  borrowPos: 3, starter: false }
         ];
 
+        // ==================== LEVEL 13: RECONOCIMIENTO DE CADENCIAS ====================
+        // Cada cadencia: secuencia de acordes como offsets desde la tonica.
+        // El V es siempre V7 real (como E7 -> Amaj7). La tonica es triada
+        // en ej. 1-9 y maj7 desde el ej. 10 (se resuelve al armar la pregunta).
+        // pool: 'basic' (ej 1-7), 'mid' (8-13), 'all' (14+/challenge)
+        const CADENCE_TYPES = [
+            { id: 'authentic',  chords: ['V7', 'I'],        pool: 'basic' },
+            { id: 'plagal',     chords: ['IV', 'I'],        pool: 'basic' },
+            { id: 'half',       chords: ['I', 'V7'],        pool: 'basic' },
+            { id: 'deceptive',  chords: ['V7', 'vi'],       pool: 'mid'   },
+            { id: 'composite',  chords: ['IV', 'V7', 'I'],  pool: 'all'   }
+        ];
+        // Voicings por simbolo (offsets de raiz + intervalos del acorde)
+        function cadenceChordSpec(symbol, tonicAsMaj7) {
+            switch (symbol) {
+                case 'I':   return tonicAsMaj7
+                    ? { rootOffset: 0, intervals: [0, 4, 7, 11] }   // Imaj7
+                    : { rootOffset: 0, intervals: [0, 4, 7] };      // I triada
+                case 'IV':  return { rootOffset: 5, intervals: [0, 4, 7] };
+                case 'V7':  return { rootOffset: 7, intervals: [0, 4, 7, 10] };
+                case 'vi':  return { rootOffset: 9, intervals: [0, 3, 7] };
+            }
+        }
+
         // ==================== LEVEL 7: INTERVALOS ====================
         // Todos los intervalos del libro, ordenados por semitonos (0 a 12)
         // 'core' = los 8 más comunes (siempre incluidos)
@@ -2003,13 +2027,25 @@
                 th_brief_title: 'Theory in brief',
                 th_quiz_title: 'How the quiz works',
                 th_gotit: 'Got it!',
+                level13_name: 'Cadence Recognition',
+                level13_desc: 'Identify authentic, plagal, half, deceptive and composite cadences',
+                q_cadence: 'What cadence is this?',
+                cad_authentic: 'Authentic (V→I)',
+                cad_plagal: 'Plagal (IV→I)',
+                cad_half: 'Half (I→V)',
+                cad_deceptive: 'Deceptive (V→vi)',
+                cad_composite: 'Composite (IV→V→I)',
+                th13_why: 'Cadences are the punctuation of music: they tell you where a phrase breathes, pauses or ends. Recognizing them by ear means understanding the form of any song in real time.',
+                th13_brief: '<strong>Authentic</strong> (V7→I): the strongest close, like E7→Amaj7. <strong>Plagal</strong> (IV→I): the church "amen", softer. <strong>Composite</strong> (IV→V7→I): preparation plus resolution, the full formula. <strong>Half</strong> (I→V7): stops on the dominant, suspended. <strong>Deceptive</strong> (V7→vi): prepares home but lands on the relative minor.',
+                th13_quiz: 'The tonic chord sounds first as reference, then the cadence, and you name it. Exercises 1-7: authentic, plagal and half; from 8 the deceptive joins; from 14, the composite. From exercise 10 the tonic resolves to maj7.',
+                th13_tip: 'Authentic vs composite differ only in what comes BEFORE the V7: if you heard the subdominant first, it is composite.',
                 th1_why: 'Every scale note has a job and a name. Knowing the degrees (tonic, dominant...) lets you talk about music in any key: "the 5th degree" means the same thing in C or in E♭.',
                 th1_brief: 'The 7 degrees of a scale are: <strong>1 Tonic</strong> (home), <strong>2 Supertonic</strong>, <strong>3 Mediant</strong>, <strong>4 Subdominant</strong>, <strong>5 Dominant</strong> (maximum tension toward home), <strong>6 Submediant</strong>, <strong>7 Leading Tone</strong> (pulls to the tonic). In minor scales the notes change, but the positions keep their names.',
                 th1_quiz: 'You are asked for a degree of a key (e.g. "the 3rd degree of F major") and you pick the right note. Exercises follow the circle of fifths; from exercise 13 the key is random.',
                 th1_tip: 'Sing the scale from the tonic and count steps: the answer is always inside the scale.',
-                th2_why: 'Chords are not isolated: each degree generates a chord with a quality (major, minor, diminished) that defines its harmonic function. This is the grammar behind every progression.',
-                th2_brief: 'Harmonizing the major scale gives: <strong>I</strong> ii iii <strong>IV V</strong> vi vii°. Natural minor gives: i ii° III iv v VI VII. Harmonic minor raises the 7th, creating <strong>V major</strong> (a real dominant) and <strong>III+</strong> (augmented).',
-                th2_quiz: 'You hear or see a chord within a key and identify which degree/function it is. The tonic chord is played as reference.',
+                th2_why: 'Chords are not isolated: each one belongs to a functional family that tells you what it wants to do next. Hearing functions (rest, preparation, tension) is hearing the grammar behind every progression.',
+                th2_brief: 'There are 3 harmonic functions: <strong>Tonic</strong> = rest, home (I and its substitutes iii and vi). <strong>Subdominant</strong> = preparation, moving away from home (ii and IV). <strong>Dominant</strong> = tension that resolves back (V and vii°). Example in C: Dm (ii) is subdominant even though D is the supertonic degree — function and degree name are different things.',
+                th2_quiz: 'The tonic chord sounds first (your reference), then a diatonic chord, and you pick its function: Tonic, Subdominant or Dominant.',
                 th2_tip: 'Memorize the major-key pattern: Major-minor-minor-Major-Major-minor-diminished.',
                 th3_why: 'Modes are the colors of the scale: same notes, different center. They are everywhere from Miles Davis to film scores. Recognizing them by ear expands what you can improvise and compose.',
                 th3_brief: 'Each mode starts the major scale from a different degree: <strong>Ionian</strong> (major), <strong>Dorian</strong> (minor with bright 6), <strong>Phrygian</strong> (♭2, Spanish sound), <strong>Lydian</strong> (♯4, dreamy), <strong>Mixolydian</strong> (♭7, dominant/rock), <strong>Aeolian</strong> (natural minor), <strong>Locrian</strong> (♭2 ♭5, unstable).',
@@ -2261,13 +2297,25 @@
                 th_brief_title: 'La teor\u00eda en breve',
                 th_quiz_title: 'C\u00f3mo funciona el quiz',
                 th_gotit: '\u00a1Entendido!',
+                level13_name: 'Reconocimiento de Cadencias',
+                level13_desc: 'Identifica cadencias aut\u00e9nticas, plagales, semicadencias, rotas y compuestas',
+                q_cadence: '\u00bfQu\u00e9 cadencia es esta?',
+                cad_authentic: 'Aut\u00e9ntica (V→I)',
+                cad_plagal: 'Plagal (IV→I)',
+                cad_half: 'Semicadencia (I→V)',
+                cad_deceptive: 'Rota (V→vi)',
+                cad_composite: 'Compuesta (IV→V→I)',
+                th13_why: 'Las cadencias son la puntuaci\u00f3n de la m\u00fasica: te dicen d\u00f3nde una frase respira, hace pausa o termina. Reconocerlas de o\u00eddo es entender la forma de cualquier canci\u00f3n en tiempo real.',
+                th13_brief: '<strong>Aut\u00e9ntica</strong> (V7→I): el cierre m\u00e1s fuerte, como E7→Amaj7. <strong>Plagal</strong> (IV→I): el "am\u00e9n" de iglesia, m\u00e1s suave. <strong>Compuesta</strong> (IV→V7→I): preparaci\u00f3n m\u00e1s resoluci\u00f3n, la f\u00f3rmula completa. <strong>Semicadencia</strong> (I→V7): se detiene en la dominante, suspendida. <strong>Rota</strong> (V7→vi): prepara casa pero cae en el relativo menor.',
+                th13_quiz: 'Primero suena el acorde de t\u00f3nica como referencia, despu\u00e9s la cadencia, y la nombr\u00e1s. Ejercicios 1-7: aut\u00e9ntica, plagal y semicadencia; desde el 8 se suma la rota; desde el 14, la compuesta. Desde el ejercicio 10 la t\u00f3nica resuelve a maj7.',
+                th13_tip: 'Aut\u00e9ntica vs compuesta se distinguen solo por lo que suena ANTES del V7: si o\u00edste la subdominante primero, es compuesta.',
                 th1_why: 'Cada nota de la escala tiene un rol y un nombre. Conocer los grados (t\u00f3nica, dominante...) te permite hablar de m\u00fasica en cualquier tonalidad: "el 5to grado" significa lo mismo en C que en E♭.',
                 th1_brief: 'Los 7 grados de una escala son: <strong>1 T\u00f3nica</strong> (el reposo), <strong>2 Supert\u00f3nica</strong>, <strong>3 Mediante</strong>, <strong>4 Subdominante</strong>, <strong>5 Dominante</strong> (m\u00e1xima tensi\u00f3n hacia casa), <strong>6 Submediante</strong>, <strong>7 Sensible</strong> (tira hacia la t\u00f3nica). En las menores cambian las notas, pero las posiciones conservan su nombre.',
                 th1_quiz: 'Te pide un grado de una tonalidad (ej. "el 3er grado de F mayor") y eleg\u00eds la nota correcta. Los ejercicios recorren el c\u00edrculo de quintas; desde el 13 la tonalidad es aleatoria.',
                 th1_tip: 'Cant\u00e1 la escala desde la t\u00f3nica y cont\u00e1 pasos: la respuesta siempre est\u00e1 dentro de la escala.',
-                th2_why: 'Los acordes no est\u00e1n aislados: cada grado genera un acorde con una cualidad (mayor, menor, disminuido) que define su funci\u00f3n arm\u00f3nica. Es la gram\u00e1tica detr\u00e1s de toda progresi\u00f3n.',
-                th2_brief: 'Armonizar la escala mayor da: <strong>I</strong> ii iii <strong>IV V</strong> vi vii°. La menor natural da: i ii° III iv v VI VII. La menor arm\u00f3nica sube la 7ma y crea el <strong>V mayor</strong> (dominante real) y el <strong>III+</strong> (aumentado).',
-                th2_quiz: 'Escuch\u00e1s o ves un acorde dentro de una tonalidad e identific\u00e1s qu\u00e9 grado/funci\u00f3n es. El acorde de t\u00f3nica suena como referencia.',
+                th2_why: 'Los acordes no est\u00e1n aislados: cada uno pertenece a una familia funcional que te dice qu\u00e9 quiere hacer despu\u00e9s. O\u00edr funciones (reposo, preparaci\u00f3n, tensi\u00f3n) es o\u00edr la gram\u00e1tica detr\u00e1s de toda progresi\u00f3n.',
+                th2_brief: 'Hay 3 funciones arm\u00f3nicas: <strong>T\u00f3nica</strong> = reposo, casa (el I y sus sustitutos iii y vi). <strong>Subdominante</strong> = preparaci\u00f3n, alejarse de casa (ii y IV). <strong>Dominante</strong> = tensi\u00f3n que resuelve (V y vii°). Ejemplo en Do: Rem (ii) es subdominante aunque Re sea el grado supert\u00f3nica — la funci\u00f3n y el nombre del grado son cosas distintas.',
+                th2_quiz: 'Primero suena el acorde de t\u00f3nica (tu referencia), despu\u00e9s un acorde diat\u00f3nico, y eleg\u00eds su funci\u00f3n: T\u00f3nica, Subdominante o Dominante.',
                 th2_tip: 'Memoriz\u00e1 el patr\u00f3n de mayor: Mayor-menor-menor-Mayor-Mayor-menor-disminuido.',
                 th3_why: 'Los modos son los colores de la escala: mismas notas, distinto centro. Est\u00e1n en todo, de Miles Davis a las bandas sonoras. Reconocerlos de o\u00eddo expande lo que pod\u00e9s improvisar y componer.',
                 th3_brief: 'Cada modo arranca la escala mayor desde un grado distinto: <strong>J\u00f3nico</strong> (mayor), <strong>D\u00f3rico</strong> (menor con 6 brillante), <strong>Frigio</strong> (♭2, sonido espa\u00f1ol), <strong>Lidio</strong> (♯4, so\u00f1ador), <strong>Mixolidio</strong> (♭7, dominante/rock), <strong>E\u00f3lico</strong> (menor natural), <strong>Locrio</strong> (♭2 ♭5, inestable).',
@@ -2522,6 +2570,7 @@
                     }
                     return this.noteDisp(option);
                 }
+                if (lid === 13) return this.t('cad_' + option);
                 if (lid === 12) {
                     // Si la pregunta pide posición: '1','2','3','4' → "1st chord" etc.
                     if (option === '1' || option === '2' || option === '3' || option === '4') {
@@ -2763,6 +2812,12 @@
                     name: 'Modal Interchange',
                     description: 'Find the borrowed chord in a progression',
                     unlocked: true
+                },
+                {
+                    id: 13,
+                    name: 'Cadence Recognition',
+                    description: 'Identify authentic, plagal, half, deceptive and composite cadences',
+                    unlocked: true
                 }
             ],
 
@@ -2837,7 +2892,7 @@
                         });
                         
                         progressHtml = `<div class="exercise-progress">${blocksHtml}</div>`;
-                    } else if (level.id === 3 || level.id === 4 || level.id === 7 || level.id === 8 || level.id === 9 || level.id === 10 || level.id === 11 || level.id === 12) {
+                    } else if (level.id === 3 || level.id === 4 || level.id === 7 || level.id === 8 || level.id === 9 || level.id === 10 || level.id === 11 || level.id === 12 || level.id === 13) {
                         // Levels 3, 4, 7, 8, 9, 10, 11 y 12: una sola barra de progreso de 20 ejercicios
                         const currentExercise = this.getUserExerciseProgress(`${level.id}_main`);
                         const progressPercent = (currentExercise / 20) * 100;
@@ -3204,9 +3259,10 @@
                         }
                         return;
                     } else if (levelId === 2) {
-                        // Challenge Level 2: Harmonic Function de todas las escalas
+                        // Challenge Level 2: Función armónica REAL de todas las escalas
                         const scaleModes = ['major', 'natural_minor', 'harmonic_minor'];
-                        const functionNames = ['Tonic', 'Supertonic', 'Mediant', 'Subdominant', 'Dominant', 'Submediant', 'Leading Tone'];
+                        const FUNCTION_OF_DEGREE = ['Tonic', 'Subdominant', 'Tonic', 'Subdominant', 'Dominant', 'Tonic', 'Dominant'];
+                        const ALL_FUNCTIONS = ['Tonic', 'Subdominant', 'Dominant'];
                         let questionCount = 0;
                         let lastDegreeIndex = -1;
                         
@@ -3219,20 +3275,15 @@
                             const diatonicChords = this.generateDiatonicChords(randomNote);
                             this.currentScaleMode = 'major'; // Resetear
                             
-                            // Grados 2-7 solamente: el Tonic delata la respuesta (acorde = key)
+                            // Grados 2-7: el acorde del grado 1 delata la respuesta
                             const degreeIdx0 = this.getRandomIndex(6, lastDegreeIndex);
                             lastDegreeIndex = degreeIdx0;
                             const degreeIndex = degreeIdx0 + 1;
                             const chord = diatonicChords[degreeIndex];
-                            const functionName = functionNames[degreeIndex];
+                            const functionName = FUNCTION_OF_DEGREE[degreeIndex];
                             
-                            // Opciones solo de los grados 2-7 (Tonic nunca es respuesta)
-                            const options = [functionName];
-                            while (options.length < 4) {
-                                const randomIdx = 1 + Math.floor(Math.random() * 6);
-                                const option = functionNames[randomIdx];
-                                if (!options.includes(option)) options.push(option);
-                            }
+                            // Siempre las 3 funciones como opciones
+                            const options = [...ALL_FUNCTIONS];
 
                             this.questions.push({
                                 question: this.t('q_function')
@@ -3310,9 +3361,13 @@
                     // Ejercicio 1-12: Orden del círculo de quintas (tonalidad fija)
                     // Ejercicio 13-20: Tonalidad aleatoria EN CADA pregunta
                     
-                    const circleOfFifths = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'];
-                    const allNotesChromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-                    const functionNames = ['Tonic', 'Supertonic', 'Mediant', 'Subdominant', 'Dominant', 'Submediant', 'Leading Tone'];
+                    // FUNCIONES ARMÓNICAS REALES (no nombres de grados):
+                    // Tónica = I, iii, vi (reposo y sustitutos)
+                    // Subdominante = ii, IV (preparación)
+                    // Dominante = V, vii° (tensión) — en natural: v y VII también dominante
+                    // El mismo mapeo por grado sirve para los 3 modos:
+                    const FUNCTION_OF_DEGREE = ['Tonic', 'Subdominant', 'Tonic', 'Subdominant', 'Dominant', 'Tonic', 'Dominant'];
+                    const ALL_FUNCTIONS = ['Tonic', 'Subdominant', 'Dominant'];
                     
                     let lastDegreeIndex = -1;
                     let lastKeyIndex = -1;
@@ -3332,23 +3387,16 @@
                         // Generar todos los acordes diatónicos en la tonalidad
                         const diatonicChords = this.generateDiatonicChords(keyNote);
 
-                        // Generar índice aleatorio evitando la repetición inmediata
-                        // Grados 2-7 solamente: el Tonic delata la respuesta (acorde = key)
+                        // Grados 2-7: el acorde del grado 1 (= la tonalidad) delata la respuesta
                         const degreeIdx0 = this.getRandomIndex(6, lastDegreeIndex);
                         lastDegreeIndex = degreeIdx0;
                         const degreeIndex = degreeIdx0 + 1;
                         
                         const chord = diatonicChords[degreeIndex];
-                        const functionName = functionNames[degreeIndex];
+                        const functionName = FUNCTION_OF_DEGREE[degreeIndex];
                         
-                        // Opciones solo de los grados 2-7: Tonic nunca puede ser
-                        // la respuesta, así que no debe aparecer como opción
-                        const options = [functionName];
-                        while (options.length < 4) {
-                            const randomIdx = 1 + Math.floor(Math.random() * 6);
-                            const option = functionNames[randomIdx];
-                            if (!options.includes(option)) options.push(option);
-                        }
+                        // Siempre las 3 funciones como opciones
+                        const options = [...ALL_FUNCTIONS];
 
                         this.questions.push({
                             question: this.t('q_function')
@@ -3739,6 +3787,68 @@
                             }
                         });
                     }
+                } else if (levelId === 13) {
+                    // Level 13: Reconocimiento de cadencias
+                    // Ej 1-7: autentica/plagal/semicadencia (3 opciones)
+                    // Ej 8-13: + rota (4 opciones) | Ej 14-20: + compuesta (4 opciones de 5)
+                    // Ej 10+: la tonica resuelve a maj7 (ej. E7 -> Amaj7)
+                    const ex = this.currentExercise || 1;
+                    let pool;
+                    if (this.isChallengeMode || ex >= 14) {
+                        pool = CADENCE_TYPES;
+                    } else if (ex >= 8) {
+                        pool = CADENCE_TYPES.filter(ct => ct.pool !== 'all');
+                    } else {
+                        pool = CADENCE_TYPES.filter(ct => ct.pool === 'basic');
+                    }
+                    const poolIds = pool.map(ct => ct.id);
+                    const tonicAsMaj7 = this.isChallengeMode || ex >= 10;
+
+                    let lastCadIdx = -1;
+                    let lastKeyIdx = -1;
+                    for (let i = 0; i < 10; i++) {
+                        const cIdx = this.getRandomIndex(pool.length, lastCadIdx);
+                        lastCadIdx = cIdx;
+                        const cadence = pool[cIdx];
+
+                        // Tonalidad: circulo de quintas en ej 1-12, aleatoria despues
+                        let tonic;
+                        if (!this.isChallengeMode && ex <= 12) {
+                            tonic = KEYS_MAJOR[ex - 1];
+                        } else {
+                            const kIdx = this.getRandomIndex(KEYS_MAJOR.length, lastKeyIdx);
+                            lastKeyIdx = kIdx;
+                            tonic = KEYS_MAJOR[kIdx];
+                        }
+                        const tonicPc = nameToPc(tonic);
+
+                        const chords = cadence.chords.map(sym => cadenceChordSpec(sym, tonicAsMaj7));
+
+                        // Opciones: todo el pool si son <=4, sino la correcta + 3
+                        let options;
+                        if (poolIds.length <= 4) {
+                            options = [...poolIds];
+                        } else {
+                            options = [cadence.id];
+                            while (options.length < 4) {
+                                const cand = poolIds[Math.floor(Math.random() * poolIds.length)];
+                                if (!options.includes(cand)) options.push(cand);
+                            }
+                        }
+
+                        this.questions.push({
+                            question: this.t('q_cadence'),
+                            correct: cadence.id,
+                            options: options.sort(() => Math.random() - 0.5),
+                            audio: {
+                                type: 'cadence_quiz',
+                                tonicPc: tonicPc,
+                                tonicOctave: 4,
+                                tonicAsMaj7: tonicAsMaj7,
+                                chords: chords
+                            }
+                        });
+                    }
                 }
             },
 
@@ -3759,7 +3869,7 @@
                         // En practice o challenge mode, siempre empezar en 1
                         this.currentExercise = 1;
                     }
-                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) {
+                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13) {
                     // Levels 3, 4, 7, 8, 9, 10, 11 y 12 también progresan por 20 ejercicios
                     // (clave propia '_main' para no depender del currentScaleMode)
                     if (!this.isChallengeMode) {
@@ -3875,7 +3985,7 @@
                     titleText += ` (${this.t('practice_word')}: ${this.noteDisp(this.practiceNote)} ${this.tonaName(this.currentScaleMode)})`;
                 } else if (this.currentLevel.id === 1 || this.currentLevel.id === 2) {
                     titleText += ` (${this.tonaName(this.currentScaleMode)}) - ${this.t('exercise')} ${this.currentExercise}/20`;
-                } else if (this.currentLevel.id === 3 || this.currentLevel.id === 4 || this.currentLevel.id === 7 || this.currentLevel.id === 8 || this.currentLevel.id === 9 || this.currentLevel.id === 10 || this.currentLevel.id === 11 || this.currentLevel.id === 12) {
+                } else if (this.currentLevel.id === 3 || this.currentLevel.id === 4 || this.currentLevel.id === 7 || this.currentLevel.id === 8 || this.currentLevel.id === 9 || this.currentLevel.id === 10 || this.currentLevel.id === 11 || this.currentLevel.id === 12 || this.currentLevel.id === 13) {
                     titleText += ` - ${this.t('exercise')} ${this.currentExercise}/20`;
                 }
 
@@ -4112,6 +4222,30 @@
                     setTimeout(() => {
                         if (stillHere()) playChord([tonicBase], 0.7);
                     }, chordCount * (chordDuration * 1000 + chordGap) + 250);
+                } else if (q.audio.type === 'cadence_quiz') {
+                    // Level 13: acorde de tonica como REFERENCIA, pausa, luego la cadencia
+                    const tonicBase = 440 * Math.pow(2, (q.audio.tonicPc + (q.audio.tonicOctave - 4) * 12 - 9) / 12);
+                    const refSpec = cadenceChordSpec('I', q.audio.tonicAsMaj7);
+                    const refFreqs = refSpec.intervals.map(iv => tonicBase * Math.pow(2, iv / 12));
+                    const chordDuration = 0.9;
+                    const chordGap = 100;
+                    const refMs = 800 + 550; // referencia + pausa
+                    const totalMs = refMs + q.audio.chords.length * (chordDuration * 1000 + chordGap) + 400;
+                    this.lockAudioButtons(totalMs);
+
+                    const questionAtPlay = this.currentQuestion;
+                    const stillHere = () => this.currentQuestion === questionAtPlay &&
+                        document.getElementById('quizScreen').classList.contains('active');
+
+                    // Referencia
+                    playChord(refFreqs, 0.8);
+                    // Cadencia
+                    q.audio.chords.forEach((chord, ci) => {
+                        const chordRootFreq = tonicBase * Math.pow(2, chord.rootOffset / 12);
+                        const freqs = chord.intervals.map(iv => chordRootFreq * Math.pow(2, iv / 12));
+                        setTimeout(() => { if (stillHere()) playChord(freqs, chordDuration); },
+                            refMs + ci * (chordDuration * 1000 + chordGap));
+                    });
                 } else if (q.audio.type === 'progression') {
                     // Level 12: progresión de 4 acordes bloqueados (sin tónica final)
                     const tonicBase = 440 * Math.pow(2, (q.audio.tonicPc + (q.audio.tonicOctave - 4) * 12 - 9) / 12);
@@ -4270,12 +4404,12 @@
                         this.saveExerciseProgress(levelId, 20);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('level_completed').replace('{name}', this.getLevelName(levelId))}</div>`;
                         document.getElementById('retryBtn').textContent = this.t('back_menu');
-                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) && this.currentExercise < 20) {
+                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13) && this.currentExercise < 20) {
                         // Levels 3, 4, 7, 8, 9, 10, 11 y 12 progresan al siguiente ejercicio
                         this.saveExerciseProgress(`${levelId}_main`, this.currentExercise + 1);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('ex_complete').replace('{n}', this.currentExercise)}</div>`;
                         document.getElementById('retryBtn').textContent = this.t('next_exercise');
-                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) && this.currentExercise === 20) {
+                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13) && this.currentExercise === 20) {
                         // Ejercicio 20 completado
                         this.saveExerciseProgress(`${levelId}_main`, 20);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('level_completed').replace('{name}', this.getLevelName(levelId))}</div>`;
@@ -4331,7 +4465,7 @@
                         // No pasó, reintentar el mismo ejercicio
                         this.startLevel(levelId);
                     }
-                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12) {
+                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13) {
                     if (passed && this.currentExercise < 20) {
                         // Pasó el ejercicio, ir al siguiente (startLevel lee el progreso guardado)
                         this.startLevel(levelId);
