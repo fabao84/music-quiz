@@ -1406,70 +1406,132 @@
 
     <script>
         // ==================== AUDIO ENGINE ====================
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // ==================== MOTOR DE AUDIO RECONSTRUIBLE ====================
+        // iOS puede dejar el AudioContext en estado 'interrupted' (no estandar de
+        // WebKit) o directamente "zombi" (dice running pero no suena) despues de
+        // llamadas, Siri, cambio de app o bloqueo de pantalla. resume() no siempre
+        // alcanza: la cura definitiva es CREAR UN CONTEXTO NUEVO. Por eso el motor
+        // completo (contexto + cadena FX) vive en variables reconstruibles.
+        let audioContext, fxCompressor, fxDryGain, fxWetGain, fxReverb, fxIn;
 
-        // ==================== CADENA DE EFECTOS MAESTRA (Rhodes+FX) ====================
-        // Todas las voces entran por fxIn y salen por: dry + reverb de convolución → compresor
-        const fxCompressor = audioContext.createDynamicsCompressor();
-        fxCompressor.threshold.value = -20;
-        fxCompressor.ratio.value = 3;
-        fxCompressor.attack.value = 0.004;
-        fxCompressor.release.value = 0.22;
+        function buildAudioEngine() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-        const fxDryGain = audioContext.createGain();
-        fxDryGain.gain.value = 0.78;
-        const fxWetGain = audioContext.createGain();
-        fxWetGain.gain.value = 0.30;
+            // Sesion de audio (Safari 17+): 'playback' evita que el switch de
+            // silencio mate el sonido y reduce interrupciones del sistema
+            try {
+                if (navigator.audioSession) navigator.audioSession.type = 'playback';
+            } catch (e) { /* no soportado: ignorar */ }
 
-        const fxReverb = audioContext.createConvolver();
-        // Respuesta de impulso generada por código: ruido estéreo con decay exponencial
-        // (sala de ~1.7s, cero KB de samples, funciona offline)
-        (function buildReverbIR() {
-            const len = Math.floor(audioContext.sampleRate * 1.7);
-            const ir = audioContext.createBuffer(2, len, audioContext.sampleRate);
+            // Cadena de efectos maestra (Rhodes+FX):
+            // todas las voces entran por fxIn y salen por dry + reverb -> compresor
+            fxCompressor = audioContext.createDynamicsCompressor();
+            fxCompressor.threshold.value = -20;
+            fxCompressor.ratio.value = 3;
+            fxCompressor.attack.value = 0.004;
+            fxCompressor.release.value = 0.22;
+
+            fxDryGain = audioContext.createGain();
+            fxDryGain.gain.value = 0.78;
+            fxWetGain = audioContext.createGain();
+            fxWetGain.gain.value = 0.30;
+
+            fxReverb = audioContext.createConvolver();
+            // IR generada por codigo: ruido estereo con decay exponencial (~1.7s)
+            const irLen = Math.floor(audioContext.sampleRate * 1.7);
+            const ir = audioContext.createBuffer(2, irLen, audioContext.sampleRate);
             for (let ch = 0; ch < 2; ch++) {
                 const d = ir.getChannelData(ch);
-                for (let i = 0; i < len; i++) {
-                    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6);
+                for (let i = 0; i < irLen; i++) {
+                    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.6);
                 }
             }
             fxReverb.buffer = ir;
-        })();
 
-        const fxIn = audioContext.createGain();
-        fxIn.connect(fxDryGain);
-        fxDryGain.connect(fxCompressor);
-        fxIn.connect(fxReverb);
-        fxReverb.connect(fxWetGain);
-        fxWetGain.connect(fxCompressor);
-        fxCompressor.connect(audioContext.destination);
+            fxIn = audioContext.createGain();
+            fxIn.connect(fxDryGain);
+            fxDryGain.connect(fxCompressor);
+            fxIn.connect(fxReverb);
+            fxReverb.connect(fxWetGain);
+            fxWetGain.connect(fxCompressor);
+            fxCompressor.connect(audioContext.destination);
 
-        // Resume audio context on first user interaction
-        function resumeAudioContext() {
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
+            // Si el sistema interrumpe el contexto y la pagina esta visible,
+            // intentar recuperar de inmediato
+            audioContext.onstatechange = () => {
+                if (document.visibilityState === 'visible' &&
+                    (audioContext.state === 'suspended' || audioContext.state === 'interrupted')) {
+                    ensureAudioAlive();
+                }
+            };
         }
 
-        // Desbloqueo de audio para iOS/Safari: el primer toque en cualquier parte
-        // reanuda el contexto y reproduce un buffer silencioso (requisito de iOS
-        // para habilitar todo el audio posterior, incluidos los auto-play)
-        function unlockAudioForIOS() {
+        function rebuildAudioEngine() {
+            // Cerrar el contexto viejo sin esperar (puede estar zombi) y crear uno nuevo
+            try { if (audioContext && audioContext.state !== 'closed') audioContext.close(); } catch (e) {}
+            buildAudioEngine();
+            // Desbloquear el contexto nuevo con un buffer silencioso
             try {
-                resumeAudioContext();
                 const buffer = audioContext.createBuffer(1, 1, 22050);
                 const source = audioContext.createBufferSource();
                 source.buffer = buffer;
                 source.connect(audioContext.destination);
                 source.start(0);
-            } catch (e) {
-                // Silencioso: si falla, los handlers normales lo reintentan
-            }
-            document.removeEventListener('touchend', unlockAudioForIOS);
-            document.removeEventListener('click', unlockAudioForIOS);
+            } catch (e) {}
         }
-        document.addEventListener('touchend', unlockAudioForIOS, false);
-        document.addEventListener('click', unlockAudioForIOS, false);
+
+        // Verificacion de salud: reanuda si esta suspendido/interrumpido y
+        // reconstruye el motor si el resume no aterriza o el reloj esta congelado
+        let audioHealthCheckPending = false;
+        function ensureAudioAlive() {
+            if (!audioContext || audioContext.state === 'closed') {
+                rebuildAudioEngine();
+                return;
+            }
+            const st = audioContext.state;
+            if (st === 'suspended' || st === 'interrupted') {
+                const resumePromise = audioContext.resume();
+                if (resumePromise && resumePromise.catch) resumePromise.catch(() => {});
+                // Si en 400ms no llego a 'running', el contexto esta zombi: reconstruir
+                setTimeout(() => {
+                    if (audioContext.state !== 'running') rebuildAudioEngine();
+                }, 400);
+                return;
+            }
+            // Estado 'running' pero posiblemente zombi: verificar que el reloj avance
+            if (audioHealthCheckPending) return;
+            audioHealthCheckPending = true;
+            const t0 = audioContext.currentTime;
+            setTimeout(() => {
+                audioHealthCheckPending = false;
+                if (audioContext.state === 'running' && audioContext.currentTime === t0) {
+                    // Reloj congelado = contexto muerto aunque diga running
+                    rebuildAudioEngine();
+                }
+            }, 250);
+        }
+
+        // Compatibilidad: el resto del codigo llama resumeAudioContext() en cada
+        // interaccion; ahora ademas de reanudar, verifica salud y auto-repara
+        function resumeAudioContext() {
+            ensureAudioAlive();
+        }
+
+        // Ciclo de vida: cada vez que el usuario VUELVE al app (cambio de app,
+        // desbloqueo de pantalla, retorno del historial), verificar el audio
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') ensureAudioAlive();
+        });
+        window.addEventListener('pageshow', () => ensureAudioAlive());
+        window.addEventListener('focus', () => ensureAudioAlive());
+
+        // Toque permanente: cualquier toque verifica el audio (barato: si esta
+        // sano no hace nada). Reemplaza el unlock de un solo uso.
+        document.addEventListener('touchend', () => ensureAudioAlive(), false);
+        document.addEventListener('click', () => ensureAudioAlive(), false);
+
+        // Arranque
+        buildAudioEngine();
 
         // ==================== DELETREO ENARMONICO ====================
         const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
