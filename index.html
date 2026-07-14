@@ -1931,7 +1931,7 @@
         // Teoria: la respuesta se razona (el audio acompana)
         // Auditivo: la respuesta esta en lo que escuchas
         const THEORY_LEVELS = [1, 2, 5, 6, 14, 15, 16, 17, 18, 19];
-        const EAR_LEVELS = [7, 4, 8, 9, 3, 10, 11, 13, 12];
+        const EAR_LEVELS = [7, 4, 8, 9, 3, 10, 11, 13, 12, 20];
 
         // ==================== LEVEL 13: RECONOCIMIENTO DE CADENCIAS ====================
         // Cada cadencia: secuencia de acordes como offsets desde la tonica.
@@ -2315,6 +2315,19 @@
                 th19_brief: 'In a major key, any chord with a note outside the scale is a candidate: <strong>iv</strong> brings ♭6, <strong>♭VII</strong> brings ♭7, <strong>♭VI</strong> brings ♭6 and ♭3. Compare each chord against the diatonic set of the key and the intruder appears.',
                 th19_quiz: 'You read a 4-chord progression in a given key. Exercises 1-9: point at the borrowed chord; from 10: name which borrowed chord it is.',
                 th19_tip: 'Write the 7 diatonic chords of the key mentally; the one that does not match is your answer.',
+                level20_name: 'Pentatonic Superimposition',
+                level20_desc: 'Hear which pentatonic colors the chord',
+                q_pent: 'A minor pentatonic is played over <strong>{chord}</strong>. From which degree of the chord is it built?',
+                pentdeg_1: 'From the root',
+                pentdeg_2: 'From the 2nd (Dorian color)',
+                pentdeg_5: 'From the 5th (adds 9 & 11)',
+                pentdeg_3: 'From the 3rd (maj7 sound)',
+                pentdeg_6: 'From the 6th (relative)',
+                pentdeg_7: 'From the 7th (Lydian color)',
+                th20_why: 'One minor pentatonic shape, played from different degrees of a chord, unlocks completely different colors. It is the working improviser\'s trick: five notes, a dozen sounds.',
+                th20_brief: 'Over a <strong>m7</strong> chord: pentatonic from the <strong>root</strong> is the basic sound; from the <strong>2nd</strong> adds the Dorian colors (9, 13); from the <strong>5th</strong> adds 9 and 11. Over a <strong>maj7</strong>: from the <strong>3rd</strong> outlines 3-5-13-7-9; from the <strong>6th</strong> (the relative) gives the major pentatonic sound; from the <strong>7th</strong> brings the ♯11 — the Lydian color.',
+                th20_quiz: 'The chord sounds, then a minor pentatonic runs over it, and you name the degree it starts from. Exercises 1-7 over m7; 8-13 over maj7; from 14, both mixed.',
+                th20_tip: 'Compare the first note of the run against the chord root: that distance IS the answer.',
                 tab_theory: '📚 Theory',
                 tab_ear: '👂 Ear Training',
                 intv_choose_cat: 'Train by parts: master each contrast, then mix',
@@ -2645,6 +2658,19 @@
                 th19_brief: 'En una tonalidad mayor, todo acorde con una nota fuera de la escala es candidato: el <strong>iv</strong> trae ♭6, el <strong>♭VII</strong> trae ♭7, el <strong>♭VI</strong> trae ♭6 y ♭3. Compar\u00e1 cada acorde contra los diat\u00f3nicos de la tonalidad y el intruso aparece.',
                 th19_quiz: 'Le\u00e9s una progresi\u00f3n de 4 acordes en una tonalidad dada. Ejercicios 1-9: se\u00f1al\u00e1 el acorde prestado; desde el 10: nombr\u00e1 cu\u00e1l pr\u00e9stamo es.',
                 th19_tip: 'Escrib\u00ed mentalmente los 7 diat\u00f3nicos de la tonalidad; el que no encaja es tu respuesta.',
+                level20_name: 'Superposici\u00f3n Pentat\u00f3nica',
+                level20_desc: 'Escucha qu\u00e9 pentat\u00f3nica colorea el acorde',
+                q_pent: 'Una pentat\u00f3nica menor suena sobre <strong>{chord}</strong>. \u00bfDesde qu\u00e9 grado del acorde est\u00e1 construida?',
+                pentdeg_1: 'Desde la fundamental',
+                pentdeg_2: 'Desde la 2da (color d\u00f3rico)',
+                pentdeg_5: 'Desde la 5ta (agrega 9 y 11)',
+                pentdeg_3: 'Desde la 3ra (sonido maj7)',
+                pentdeg_6: 'Desde la 6ta (relativa)',
+                pentdeg_7: 'Desde la 7ma (color lidio)',
+                th20_why: 'Una misma pentat\u00f3nica menor, tocada desde distintos grados de un acorde, desbloquea colores completamente distintos. Es el truco del improvisador que trabaja: cinco notas, una docena de sonidos.',
+                th20_brief: 'Sobre un acorde <strong>m7</strong>: la pentat\u00f3nica desde la <strong>fundamental</strong> es el sonido b\u00e1sico; desde la <strong>2da</strong> agrega los colores d\u00f3ricos (9, 13); desde la <strong>5ta</strong> agrega 9 y 11. Sobre un <strong>maj7</strong>: desde la <strong>3ra</strong> dibuja 3-5-13-7-9; desde la <strong>6ta</strong> (la relativa) da el sonido de pentat\u00f3nica mayor; desde la <strong>7ma</strong> trae el ♯11 — el color lidio.',
+                th20_quiz: 'Suena el acorde, despu\u00e9s una pentat\u00f3nica menor corre por encima, y nombr\u00e1s el grado desde el que arranca. Ejercicios 1-7 sobre m7; 8-13 sobre maj7; desde el 14, mezclados.',
+                th20_tip: 'Compar\u00e1 la primera nota de la corrida contra la fundamental del acorde: esa distancia ES la respuesta.',
                 tab_theory: '📚 Teor\u00eda',
                 tab_ear: '👂 Entrenamiento Auditivo',
                 intv_choose_cat: 'Entrena por partes: domina cada contraste y despu\u00e9s mezcla',
@@ -2926,6 +2952,7 @@
                     return this.noteDisp(option);
                 }
                 if (lid === 13 || lid === 14) return this.t('cad_' + option);
+                if (lid === 20) return this.t('pentdeg_' + option);
                 if (lid === 15) {
                     if (option === '0') return this.t('sig_none');
                     if (/^\d[#b]$/.test(option)) return option[0] + (option[1] === '#' ? '♯' : '♭');
@@ -3269,6 +3296,12 @@
                     name: 'Modal Interchange Analysis',
                     description: 'Find the borrowed chord on paper',
                     unlocked: true
+                },
+                {
+                    id: 20,
+                    name: 'Pentatonic Superimposition',
+                    description: 'Hear which pentatonic colors the chord',
+                    unlocked: true
                 }
             ],
 
@@ -3367,7 +3400,7 @@
                                 </div>
                             </div>
                         `;
-                    } else if (level.id === 3 || level.id === 4 || level.id === 8 || level.id === 9 || level.id === 10 || level.id === 11 || level.id === 12 || level.id === 13 || level.id === 14 || level.id === 15 || level.id === 16 || level.id === 17 || level.id === 18 || level.id === 19) {
+                    } else if (level.id === 3 || level.id === 4 || level.id === 8 || level.id === 9 || level.id === 10 || level.id === 11 || level.id === 12 || level.id === 13 || level.id === 14 || level.id === 15 || level.id === 16 || level.id === 17 || level.id === 18 || level.id === 19 || level.id === 20) {
                         // Levels 3, 4, 7, 8, 9, 10, 11 y 12: una sola barra de progreso de 20 ejercicios
                         const currentExercise = this.getUserExerciseProgress(`${level.id}_main`);
                         const progressPercent = (currentExercise / 20) * 100;
@@ -3994,11 +4027,10 @@
                         intvPool = INTERVAL_CORE.filter(i => i.semitones > 0);
                     }
                     const intvIds = intvPool.map(i => i.id);
-                    let lastIntvIdx = -1;
+                    const intvPick = { lastIdx: -1, run: 0 };
 
                     for (let i = 0; i < 10; i++) {
-                        const idx = this.getRandomIndex(intvPool.length, lastIntvIdx);
-                        lastIntvIdx = idx;
+                        const idx = this.pickVariedIndex(intvPool.length, intvPick);
                         const interval = intvPool[idx];
                         // Nota base aleatoria
                         const baseNote = allNotesChromatic[Math.floor(Math.random() * 12)];
@@ -4292,11 +4324,10 @@
                     const poolIds = pool.map(ct => ct.id);
                     const tonicAsMaj7 = this.isChallengeMode || ex >= 10;
 
-                    let lastCadIdx = -1;
+                    const cadPick = { lastIdx: -1, run: 0 };
                     let lastKeyIdx = -1;
                     for (let i = 0; i < 10; i++) {
-                        const cIdx = this.getRandomIndex(pool.length, lastCadIdx);
-                        lastCadIdx = cIdx;
+                        const cIdx = this.pickVariedIndex(pool.length, cadPick);
                         const cadence = pool[cIdx];
 
                         // Tonalidad: circulo de quintas en ej 1-12, aleatoria despues
@@ -4354,11 +4385,10 @@
                     const poolIds = pool.map(ct => ct.id);
                     const tonicAsMaj7 = this.isChallengeMode || ex >= 10;
 
-                    let lastCadIdx = -1;
+                    const cadPick = { lastIdx: -1, run: 0 };
                     let lastKeyIdx = -1;
                     for (let i = 0; i < 10; i++) {
-                        const cIdx = this.getRandomIndex(pool.length, lastCadIdx);
-                        lastCadIdx = cIdx;
+                        const cIdx = this.pickVariedIndex(pool.length, cadPick);
                         const cadence = pool[cIdx];
 
                         let tonic;
@@ -4676,6 +4706,47 @@
                             options: options
                         });
                     }
+                } else if (levelId === 20) {
+                    // Level 20: Superposicion pentatonica (Gwizdala, Parte 3).
+                    // Suena el acorde + pentatonica menor arpegiada encima; se
+                    // identifica desde que grado del acorde esta construida.
+                    // Ej 1-7: sobre m7 (grados 1/2/5) | 8-13: sobre maj7 (3/6/7)
+                    // Ej 14+: mezclados. Botones fijos por familia.
+                    const ex = this.currentExercise || 1;
+                    const PENT_FAMILIES = {
+                        m7:   { intervals: [0, 3, 7, 10], suffix: 'm7',   degrees: ['1', '2', '5'] },
+                        maj7: { intervals: [0, 4, 7, 11], suffix: 'maj7', degrees: ['3', '6', '7'] }
+                    };
+                    const DEGREE_OFFSET = { '1': 0, '2': 2, '3': 4, '5': 7, '6': 9, '7': 11 };
+                    let famPool;
+                    if (this.isChallengeMode || ex >= 14) famPool = ['m7', 'maj7'];
+                    else if (ex >= 8) famPool = ['maj7'];
+                    else famPool = ['m7'];
+
+                    const degPick = { lastIdx: -1, run: 0 };
+                    let lastKeyIdx = -1;
+                    for (let i = 0; i < 10; i++) {
+                        const fam = famPool[Math.floor(Math.random() * famPool.length)];
+                        const spec = PENT_FAMILIES[fam];
+                        const dIdx = this.pickVariedIndex(spec.degrees.length, degPick);
+                        const degree = spec.degrees[dIdx];
+                        const kIdx = this.getRandomIndex(KEYS_MAJOR.length, lastKeyIdx);
+                        lastKeyIdx = kIdx;
+                        const key = KEYS_MAJOR[kIdx];
+
+                        this.questions.push({
+                            question: this.t('q_pent')
+                                .replace('{chord}', this.chordDisp(key + spec.suffix)),
+                            correct: degree,
+                            options: [...spec.degrees],
+                            audio: {
+                                type: 'pent_quiz',
+                                chordPc: nameToPc(key),
+                                chordIntervals: spec.intervals,
+                                pentOffset: DEGREE_OFFSET[degree]
+                            }
+                        });
+                    }
                 }
             },
 
@@ -4696,7 +4767,7 @@
                         // En practice o challenge mode, siempre empezar en 1
                         this.currentExercise = 1;
                     }
-                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19) {
+                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19 || levelId === 20) {
                     // Levels 3, 4, 7, 8, 9, 10, 11 y 12 también progresan por 20 ejercicios
                     // (clave propia '_main' para no depender del currentScaleMode)
                     if (!this.isChallengeMode) {
@@ -4773,6 +4844,19 @@
                 return chords;
             },
 
+            // Eleccion aleatoria que PERMITE repetir (max 2 seguidas). Para pools
+            // chicos (2-3 opciones): el anti-repeticion estricto genera patrones
+            // predecibles (con 2 opciones, alternancia perfecta = trampa facil)
+            pickVariedIndex(poolLen, state) {
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * poolLen);
+                } while (poolLen > 1 && idx === state.lastIdx && state.run >= 2);
+                state.run = (idx === state.lastIdx) ? state.run + 1 : 1;
+                state.lastIdx = idx;
+                return idx;
+            },
+
             getRandomIndex(itemCount, lastIndex = -1) {
                 // Obtiene un índice aleatorio evitando solo la repetición inmediata
                 // Si lastIndex es -1, permite cualquier índice
@@ -4816,7 +4900,7 @@
                     titleText += ` (${this.tonaName(this.currentScaleMode)}) - ${this.t('exercise')} ${this.currentExercise}/20`;
                 } else if (this.currentLevel.id === 7 && !this.isChallengeMode) {
                     titleText += ` (${this.t('intvcat_' + (this.intvCategory || 'all'))}) - ${this.t('exercise')} ${this.currentExercise}/20`;
-                } else if (this.currentLevel.id === 3 || this.currentLevel.id === 4 || this.currentLevel.id === 7 || this.currentLevel.id === 8 || this.currentLevel.id === 9 || this.currentLevel.id === 10 || this.currentLevel.id === 11 || this.currentLevel.id === 12 || this.currentLevel.id === 13 || this.currentLevel.id === 14 || this.currentLevel.id === 15 || this.currentLevel.id === 16 || this.currentLevel.id === 17 || this.currentLevel.id === 18 || this.currentLevel.id === 19) {
+                } else if (this.currentLevel.id === 3 || this.currentLevel.id === 4 || this.currentLevel.id === 7 || this.currentLevel.id === 8 || this.currentLevel.id === 9 || this.currentLevel.id === 10 || this.currentLevel.id === 11 || this.currentLevel.id === 12 || this.currentLevel.id === 13 || this.currentLevel.id === 14 || this.currentLevel.id === 15 || this.currentLevel.id === 16 || this.currentLevel.id === 17 || this.currentLevel.id === 18 || this.currentLevel.id === 19 || this.currentLevel.id === 20) {
                     titleText += ` - ${this.t('exercise')} ${this.currentExercise}/20`;
                 }
 
@@ -5047,6 +5131,30 @@
                         const freqs = chord.intervals.map(iv => chordRootFreq * Math.pow(2, iv / 12));
                         setTimeout(() => { if (stillHere()) playChord(freqs, chordDuration); }, ci * (chordDuration * 1000 + chordGap));
                     });
+                } else if (q.audio.type === 'pent_quiz') {
+                    // Level 20: acorde sostenido (pad) + pentatonica menor
+                    // arpegiada una octava arriba
+                    const base = 440 * Math.pow(2, (q.audio.chordPc - 9) / 12);
+                    const chordFreqs = q.audio.chordIntervals.map(iv => base * Math.pow(2, iv / 12));
+                    const pentBase = base * Math.pow(2, q.audio.pentOffset / 12) * 2;
+                    const PENT_INTERVALS = [0, 3, 5, 7, 10];
+                    const noteGap = 330;
+                    const runStart = 900;
+                    const totalMs = runStart + PENT_INTERVALS.length * noteGap + 900;
+                    this.lockAudioButtons(totalMs);
+
+                    const questionAtPlay = this.currentQuestion;
+                    const stillHere = () => this.currentQuestion === questionAtPlay &&
+                        document.getElementById('quizScreen').classList.contains('active');
+
+                    // Acorde como colchon largo
+                    playChord(chordFreqs, 3.2);
+                    // Corrida pentatonica encima
+                    PENT_INTERVALS.forEach((iv, ni) => {
+                        setTimeout(() => {
+                            if (stillHere()) playChord([pentBase * Math.pow(2, iv / 12)], 0.55);
+                        }, runStart + ni * noteGap);
+                    });
                 } else if (q.audio.type === 'cadence_quiz') {
                     // Level 13: acorde de tonica como REFERENCIA, pausa, luego la cadencia
                     const tonicBase = 440 * Math.pow(2, (q.audio.tonicPc + (q.audio.tonicOctave - 4) * 12 - 9) / 12);
@@ -5229,12 +5337,12 @@
                         this.saveExerciseProgress(levelId, 20);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('level_completed').replace('{name}', this.getLevelName(levelId))}</div>`;
                         document.getElementById('retryBtn').textContent = this.t('back_menu');
-                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19) && this.currentExercise < 20) {
+                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19 || levelId === 20) && this.currentExercise < 20) {
                         // Levels 3, 4, 7, 8, 9, 10, 11 y 12 progresan al siguiente ejercicio
                         this.saveExerciseProgress(this.mainProgressKey(levelId), this.currentExercise + 1);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('ex_complete').replace('{n}', this.currentExercise)}</div>`;
                         document.getElementById('retryBtn').textContent = this.t('next_exercise');
-                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19) && this.currentExercise === 20) {
+                    } else if ((levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19 || levelId === 20) && this.currentExercise === 20) {
                         // Ejercicio 20 completado
                         this.saveExerciseProgress(this.mainProgressKey(levelId), 20);
                         unblockMsg.innerHTML = `<div class="unlock-message">${this.t('level_completed').replace('{name}', this.getLevelName(levelId))}</div>`;
@@ -5290,7 +5398,7 @@
                         // No pasó, reintentar el mismo ejercicio
                         this.startLevel(levelId);
                     }
-                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19) {
+                } else if (levelId === 3 || levelId === 4 || levelId === 7 || levelId === 8 || levelId === 9 || levelId === 10 || levelId === 11 || levelId === 12 || levelId === 13 || levelId === 14 || levelId === 15 || levelId === 16 || levelId === 17 || levelId === 18 || levelId === 19 || levelId === 20) {
                     if (passed && this.currentExercise < 20) {
                         // Pasó el ejercicio, ir al siguiente (startLevel lee el progreso guardado)
                         this.startLevel(levelId);
