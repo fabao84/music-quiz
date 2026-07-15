@@ -4844,17 +4844,15 @@
                 return chords;
             },
 
-            // Eleccion aleatoria que PERMITE repetir (max 2 seguidas). Para pools
-            // chicos (2-3 opciones): el anti-repeticion estricto genera patrones
-            // predecibles (con 2 opciones, alternancia perfecta = trampa facil)
+            // ALEATORIEDAD PURA: cada pregunta es independiente (moneda real).
+            // Leccion aprendida: CUALQUIER regla determinista es un patron
+            // explotable. "Nunca repite" => alternancia perfecta. "Maximo 2
+            // seguidas" => tras 2 iguales, la 3ra es 100% predecible (pares AABB).
+            // La unica seleccion sin patron es la uniforme independiente: las
+            // rachas ocasionales (3-4 iguales) son la PRUEBA de que es honesta,
+            // y con 2 opciones mueren solas (P(racha de n) = 0.5^n).
             pickVariedIndex(poolLen, state) {
-                let idx;
-                do {
-                    idx = Math.floor(Math.random() * poolLen);
-                } while (poolLen > 1 && idx === state.lastIdx && state.run >= 2);
-                state.run = (idx === state.lastIdx) ? state.run + 1 : 1;
-                state.lastIdx = idx;
-                return idx;
+                return Math.floor(Math.random() * poolLen);
             },
 
             getRandomIndex(itemCount, lastIndex = -1) {
